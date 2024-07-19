@@ -1,9 +1,22 @@
 /**
  * Reset some basic elements
  */
-body, h1, h2, h3, h4, h5, h6,
-p, blockquote, pre, hr,
-dl, dd, ol, ul, figure {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+hr,
+dl,
+dd,
+ol,
+ul,
+figure {
   margin: 0;
   padding: 0;
 }
@@ -33,9 +46,19 @@ body {
 /**
  * Set `margin-bottom` to maintain vertical rhythm
  */
-h1, h2, h3, h4, h5, h6,
-p, blockquote, pre,
-ul, ol, dl, figure {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+ul,
+ol,
+dl,
+figure {
   margin-bottom: 15px;
 }
 
@@ -43,7 +66,8 @@ ul, ol, dl, figure {
  * `main` element
  */
 main {
-  display: block; /* Default value of `display` of `main` element is 'inline' in IE 11. */
+  display: block;
+  /* Default value of `display` of `main` element is 'inline' in IE 11. */
 }
 
 /**
@@ -68,7 +92,8 @@ figcaption {
 /**
  * Lists
  */
-ul, ol {
+ul,
+ol {
   margin-left: 30px;
 }
 
@@ -80,7 +105,12 @@ li > ol {
 /**
  * Headings
  */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
 }
 
@@ -143,10 +173,14 @@ pre > code {
   background-color: transparent;
   border: 0;
 }
-pre table, pre pre {
+pre table,
+pre pre {
   margin-bottom: 0;
 }
-pre table .gutter, pre table .code, pre pre .gutter, pre pre .code {
+pre table .gutter,
+pre table .code,
+pre pre .gutter,
+pre pre .code {
   padding: 6px;
   border: none;
 }
@@ -185,7 +219,8 @@ table {
 table tr:nth-child(even) {
   background-color: #f7f7f7;
 }
-table th, table td {
+table th,
+table td {
   padding: 10px 15px;
 }
 table th {
@@ -206,7 +241,8 @@ table td {
 
 .framework .main, .page-content {
   flex: 1;
-  min-width: 0; /* <-- fix flexbox width with pre tags  */
+  min-width: 0;
+  /* <-- fix flexbox width with pre tags  */
 }
 
 /**
@@ -233,7 +269,8 @@ html[data-scroll-status=top] header.site-header-transparent {
   background-color: transparent;
   transition: 0.1s height, background-color, box-shadow;
 }
-html[data-scroll-status=top] header.site-header-transparent.site-header .site-brand-inner, html[data-scroll-status=top] header.site-header-transparent.site-header .page-link {
+html[data-scroll-status=top] header.site-header-transparent.site-header .site-brand-inner,
+html[data-scroll-status=top] header.site-header-transparent.site-header .page-link {
   color: #fff;
   transition: 0.1s color;
 }
@@ -269,12 +306,15 @@ html[data-scroll-status=down] .framework .sidebar {
   transition: height 0.2s, text-shadow 0.2s, top 0.2s;
   box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.06);
   position: sticky;
-  position: -moz-sticky; /* <-- fix sticky compatibility issue */
+  position: -moz-sticky;
+  /* <-- fix sticky compatibility issue */
   position: -ms-sticky;
   position: -o-sticky;
   position: -webkit-sticky;
-  align-self: flex-start; /* <-- fix the sticky not work issue */
-  transform: scale(0.9999); /* <-- fix the sticky x overflow issue */
+  align-self: flex-start;
+  /* <-- fix the sticky not work issue */
+  transform: scale(0.9999);
+  /* <-- fix the sticky x overflow issue */
   top: 0;
   z-index: 1000;
 }
@@ -433,7 +473,8 @@ html[data-scroll-status=down] .framework .sidebar {
  */
 .page-content {
   /* <-- Keep footer on the bottom */
-  -ms-flex: none; /* <-- Fix IE footer issue */
+  -ms-flex: none;
+  /* <-- Fix IE footer issue */
   padding: 60px 0;
   padding-top: 72px;
 }
@@ -535,7 +576,8 @@ html[data-scroll-status=down] .framework .sidebar {
   transform: rotate(-45deg);
   -webkit-transform: rotate(-45deg);
 }
-.pagination .paginator .previous span, .pagination .paginator .next span {
+.pagination .paginator .previous span,
+.pagination .paginator .next span {
   color: #b3b3b3;
 }
 .pagination .paginator .indicator {
@@ -589,18 +631,27 @@ html[data-scroll-status=down] .framework .sidebar {
     font-size: 15.75px;
   }
 }
-.post .post-content img, .post .post-content svg, .post .post-content iframe {
+.post .post-content img,
+.post .post-content svg,
+.post .post-content iframe {
   margin-left: auto;
   margin-right: auto;
 }
-.post .post-content img:not(.emoji), .post .post-content svg, .post .post-content iframe {
+.post .post-content img:not(.emoji),
+.post .post-content svg,
+.post .post-content iframe {
   display: block;
   max-height: 50vh;
 }
-.post .post-content h2, .post .post-content h3, .post .post-content h4, .post .post-content h5, .post .post-content h6 {
+.post .post-content h2,
+.post .post-content h3,
+.post .post-content h4,
+.post .post-content h5,
+.post .post-content h6 {
   margin: 60px 0 19px;
 }
-.post .post-content p, .post .post-content hr {
+.post .post-content p,
+.post .post-content hr {
   margin-bottom: 24px;
 }
 .post .post-content hr {
@@ -818,12 +869,15 @@ html[data-scroll-status=down] .framework .sidebar {
   padding-left: 8px;
   transition: top 0.2s, display 0.2s;
   position: sticky;
-  position: -moz-sticky; /* <-- fix sticky compatibility issue */
+  position: -moz-sticky;
+  /* <-- fix sticky compatibility issue */
   position: -ms-sticky;
   position: -o-sticky;
   position: -webkit-sticky;
-  align-self: flex-start; /* <-- fix the sticky not work issue */
-  transform: scale(0.9999); /* <-- fix the sticky x overflow issue */
+  align-self: flex-start;
+  /* <-- fix the sticky not work issue */
+  transform: scale(0.9999);
+  /* <-- fix the sticky x overflow issue */
   top: 83.84px;
 }
 @media screen and (max-width: 800px) {

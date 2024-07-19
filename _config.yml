@@ -24,9 +24,8 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Your awesome title
-email: your-email@domain.com
-author: GitHub User
+title: YuanPang Blog
+author: Leon Liu
 
 # Copyright setting
 # You can use any html code, currently below placeholders are available:
@@ -40,15 +39,19 @@ author: GitHub User
 #   "Copyright (c) 2017-{currentYear} <a href="https://example.com">{author}</a>"
 #   "Copyright © 2017-2021 Foobar"
 #
-copyright: "Unpublished Work (cleft) 2017-{currentYear} {author}"
+copyright: "Copyright @ {currentYear} <a href='https://gozhiyuan.github.io'>{author}</a>"
 
 description: >- # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
+  Welcome to my technical blog, a comprehensive resource for enthusiasts and professionals alike. 
+  Dive into a wealth of learning notes and insights on 
+  machine learning, deep learning, AI, large language models (LLMs), generative models, 
+  data science, computer science, natural language processing (NLP), and computer vision. 
+  Stay updated with the latest advancements, explore practical tutorials, 
+  and enhance your knowledge in these cutting-edge fields. 
+  Whether you're a beginner or an expert, this blog is your go-to destination for all things AI and beyond.
 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. https://example.com
+url: "https://gozhiyuan.github.io" # the base hostname & protocol for your site, e.g. https://example.com
 favicon: "" # the favicon for your site
 
 # Yat date format
@@ -147,19 +150,19 @@ yat:
 
 # If you want to link only specific pages in your header, uncomment
 # this and add the path to the pages in order as they should show up
-# header_pages:
-#   - index.html
-#   - archives.html
-#   - categories.html
-#   - tags.html
+header_pages:
+  - index.html
+  - archives.html
+  - categories.html
+  - tags.html
 #   - about.md
 
 # Page default value
-# defaults:
-#   home:
-#     heading: "Your awesome heading"
-#     subheading: "Your awesome subheading"
-#     banner: "Your image url"
+defaults:
+  home:
+    heading: "✏ Welcome to Yuanpang Blog"
+    subheading: "Hey this is Leon. You can also call me Zhiyuan or Yuanpang. I'm passionate about new technologies. In this blog, I document my learning notes and experiences. Thanks for reading!"
+    banner: "Your image url"
 
 # Banner default settings
 # These banner settings are for global banner default, but you can also

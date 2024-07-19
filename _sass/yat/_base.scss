@@ -1,9 +1,22 @@
 /**
  * Reset some basic elements
  */
-body, h1, h2, h3, h4, h5, h6,
-p, blockquote, pre, hr,
-dl, dd, ol, ul, figure {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+hr,
+dl,
+dd,
+ol,
+ul,
+figure {
   margin: 0;
   padding: 0;
 }
@@ -23,9 +36,9 @@ body {
   background-color: $background-color;
   -webkit-text-size-adjust: 100%;
   -webkit-font-feature-settings: "kern" 1;
-     -moz-font-feature-settings: "kern" 1;
-       -o-font-feature-settings: "kern" 1;
-          font-feature-settings: "kern" 1;
+  -moz-font-feature-settings: "kern" 1;
+  -o-font-feature-settings: "kern" 1;
+  font-feature-settings: "kern" 1;
   font-kerning: normal;
   display: flex;
   min-height: 100vh;
@@ -37,11 +50,21 @@ body {
 /**
  * Set `margin-bottom` to maintain vertical rhythm
  */
-h1, h2, h3, h4, h5, h6,
-p, blockquote, pre,
-ul, ol, dl, figure,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+ul,
+ol,
+dl,
+figure,
 %vertical-rhythm {
-  margin-bottom: $spacing-unit / 2;
+  margin-bottom: calc($spacing-unit / 2);
 }
 
 
@@ -50,7 +73,8 @@ ul, ol, dl, figure,
  * `main` element
  */
 main {
-  display: block; /* Default value of `display` of `main` element is 'inline' in IE 11. */
+  display: block;
+  /* Default value of `display` of `main` element is 'inline' in IE 11. */
 }
 
 
@@ -68,7 +92,7 @@ img {
 /**
  * Figures
  */
-figure > img {
+figure>img {
   display: block;
 }
 
@@ -81,13 +105,15 @@ figcaption {
 /**
  * Lists
  */
-ul, ol {
+ul,
+ol {
   margin-left: $spacing-unit;
 }
 
 li {
-  > ul,
-  > ol {
+
+  >ul,
+  >ol {
     margin-bottom: 0;
   }
 }
@@ -97,7 +123,12 @@ li {
 /**
  * Headings
  */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: $base-font-weight * 1.5;
 }
 
@@ -127,7 +158,7 @@ a {
 blockquote {
   color: $grey-color;
   border-left: 4px solid $grey-color-light;
-  padding-left: $spacing-unit / 2;
+  padding-left: calc($spacing-unit / 2);
   @include relative-font-size(1.125);
   letter-spacing: -1px;
   font-style: italic;
@@ -148,7 +179,7 @@ code {
   color: $text-color;
 }
 
-*:not(pre) > code {
+*:not(pre)>code {
   padding: 3px 6px;
   border-radius: 3px;
   background-color: #eee;
@@ -160,17 +191,19 @@ pre {
   position: relative;
   background-color: #f0f0f0;
 
-  > code {
+  >code {
     display: inline-block;
-    padding: 20px!important;
+    padding: 20px !important;
     background-color: transparent;
     border: 0;
   }
 
-  table, pre {
+  table,
+  pre {
     margin-bottom: 0;
 
-    .gutter, .code {
+    .gutter,
+    .code {
       padding: 6px;
       border: none;
     }
@@ -220,8 +253,9 @@ table {
     }
   }
 
-  th, td {
-    padding: ($spacing-unit / 3) ($spacing-unit / 2);
+  th,
+  td {
+    padding: (calc($spacing-unit / 3)) (calc($spacing-unit / 2));
   }
 
   th {
@@ -244,7 +278,8 @@ table {
 
 %flex-1 {
   flex: 1;
-  min-width: 0; /* <-- fix flexbox width with pre tags  */
+  min-width: 0;
+  /* <-- fix flexbox width with pre tags  */
 }
 
 /**
@@ -252,12 +287,15 @@ table {
  */
 @mixin flex-sticky($top) {
   position: sticky;
-  position: -moz-sticky; /* <-- fix sticky compatibility issue */
+  position: -moz-sticky;
+  /* <-- fix sticky compatibility issue */
   position: -ms-sticky;
   position: -o-sticky;
   position: -webkit-sticky;
-  align-self: flex-start; /* <-- fix the sticky not work issue */
-  transform: scale(0.9999); /* <-- fix the sticky x overflow issue */
+  align-self: flex-start;
+  /* <-- fix the sticky not work issue */
+  transform: scale(0.9999);
+  /* <-- fix the sticky x overflow issue */
   top: $top;
 }
 
@@ -289,4 +327,3 @@ table {
   background-position: center center;
   overflow: hidden;
 }
-
