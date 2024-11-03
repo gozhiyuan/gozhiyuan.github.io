@@ -1,4 +1,246 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-11-02T19:56:26-04:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">YuanPang Blog</title><subtitle>Welcome to my technical blog, a comprehensive resource for enthusiasts and professionals alike.  Dive into a wealth of learning notes and insights on  machine learning, deep learning, AI, large language models (LLMs), generative models,  data science, computer science, natural language processing (NLP), and computer vision.  Stay updated with the latest advancements, explore practical tutorials,  and enhance your knowledge in these cutting-edge fields.  Whether you&apos;re a beginner or an expert, this blog is your go-to destination for all things AI and beyond.</subtitle><author><name>Leon Liu</name></author><entry><title type="html">Introduction of Quantization</title><link href="http://localhost:4000/llm/2024/06/01/quantization-introduction.html" rel="alternate" type="text/html" title="Introduction of Quantization" /><published>2024-06-01T00:00:00-04:00</published><updated>2024-06-01T00:00:00-04:00</updated><id>http://localhost:4000/llm/2024/06/01/quantization-introduction</id><content type="html" xml:base="http://localhost:4000/llm/2024/06/01/quantization-introduction.html"><![CDATA[<h1 id="overview-of-quantization">Overview of Quantization</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-11-03T01:41:06-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">YuanPang Blog</title><subtitle>Welcome to my technical blog, a comprehensive resource for enthusiasts and professionals alike.  Dive into a wealth of learning notes and insights on  machine learning, deep learning, AI, large language models (LLMs), generative models,  data science, computer science, natural language processing (NLP), and computer vision.  Stay updated with the latest advancements, explore practical tutorials,  and enhance your knowledge in these cutting-edge fields.  Whether you&apos;re a beginner or an expert, this blog is your go-to destination for all things AI and beyond.</subtitle><author><name>Leon Liu</name></author><entry><title type="html">TinyML Lecture 1 🚀</title><link href="http://localhost:4000/course/tldr/2024/09/05/mit-tinyml-01.html" rel="alternate" type="text/html" title="TinyML Lecture 1 🚀" /><published>2024-09-05T00:00:00-04:00</published><updated>2024-09-05T00:00:00-04:00</updated><id>http://localhost:4000/course/tldr/2024/09/05/mit-tinyml-01</id><content type="html" xml:base="http://localhost:4000/course/tldr/2024/09/05/mit-tinyml-01.html"><![CDATA[<h1 id="tinyml-2024-lecture-1-">TinyML 2024 Lecture 1 🌱</h1>
+
+<p>MIT’s <em>TinyML and Efficient Deep Learning Computing</em> course, taught by Professor Song Han, kicks off with an introduction to optimizing and speeding up deep learning models. As models grow in complexity, hardware constraints create a gap between model needs and deployment capabilities, driving up costs and emphasizing the need for efficient deep learning.</p>
+
+<p><img src="/assets/images/tinyml-2024/01/1.png" alt="alt_text" title="image_tooltip" /></p>
+
+<hr />
+
+<h2 id="-key-highlights">🌟 Key Highlights</h2>
+
+<h3 id="1-the-need-for-efficient-deep-learning-">1. The Need for Efficient Deep Learning 🧠</h3>
+<ul>
+  <li><strong>Model Growth</strong>: The exponential rise in model sizes, especially for LLMs, outpaces GPU memory.</li>
+  <li><strong>Cost &amp; Efficiency</strong>: Larger models raise costs, reinforcing the demand for optimization.</li>
+  <li><strong>Model Compression</strong>: Techniques like pruning and quantization reduce model size and operational cost.</li>
+</ul>
+
+<h3 id="2-computer-vision-applications-">2. Computer Vision Applications 📸</h3>
+<ul>
+  <li><strong>Applications</strong>:
+    <ul>
+      <li><strong>Image Classification</strong>: Super-human accuracy but high computation.</li>
+      <li><strong>Object Detection &amp; Pose Estimation</strong>: Optimized for mobile devices.</li>
+      <li><strong>Image Segmentation</strong>: “Segment anything” models use EfficientViT-SAM to improve speed.</li>
+      <li><strong>Generative Models</strong>: Diffusion models in image/video generation demand high computation.</li>
+      <li><strong>3D Vision</strong>: Autonomous driving advancements with models like Fast-LiDARNet and BEVFusion.</li>
+    </ul>
+  </li>
+  <li><strong>Efficiency Focus</strong>: Balancing high accuracy with minimal computation.</li>
+</ul>
+
+<h4 id="efficientvit-sam-accelerating-segment-anything-">EfficientViT-SAM: Accelerating “Segment Anything” ⚡</h4>
+<p><img src="/assets/images/tinyml-2024/01/2.png" alt="alt_text" title="image_tooltip" />
+EfficientViT-SAM enhances SAM-ViT-H by integrating EfficientViT, boosting speed without losing accuracy.</p>
+
+<ul>
+  <li><strong>What is “Segment Anything”?</strong> Models that can segment any object in an image with a prompt (e.g., point, box).</li>
+  <li><strong>Efficiency Gains</strong>:
+    <ul>
+      <li><strong>48.9x Throughput</strong>: Processes 49x more images/sec on A100 GPU.</li>
+      <li><strong>Zero-Shot Segmentation</strong>: Matches SAM-ViT-H’s performance without training.</li>
+    </ul>
+  </li>
+  <li><strong>Advantages</strong>:
+    <ul>
+      <li><strong>Reduced Computation</strong>: Enables real-time use on limited hardware.</li>
+      <li><strong>Preserved Accuracy</strong>: Same performance as SAM-ViT-H.</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="3-bevfusion-for-3d-perception-">3. BEVFusion for 3D Perception 🌐</h3>
+<p><img src="/assets/images/tinyml-2024/01/3.png" alt="alt_text" title="image_tooltip" />
+BEVFusion enables efficient 3D perception in self-driving:</p>
+<ul>
+  <li><strong>Sensor Input</strong>: Combines data from six cameras and LiDAR.</li>
+  <li><strong>Tasks</strong>:
+    <ul>
+      <li><strong>3D Object Detection</strong>: Identifies objects in 3D, like cars and pedestrians.</li>
+      <li><strong>BEV Map Segmentation</strong>: Creates a top-down map, segmenting areas like lanes and barriers.</li>
+    </ul>
+  </li>
+  <li><strong>Efficiency</strong>: Runs on NVIDIA Jetson Orin, a mobile GPU, for real-time use.</li>
+</ul>
+
+<h3 id="4-natural-language-processing--large-language-models-">4. Natural Language Processing &amp; Large Language Models 📝</h3>
+<ul>
+  <li><strong>LLM Capabilities</strong>: Tasks include translation, code generation, few-shot learning.</li>
+  <li><strong>Challenges</strong>: Bigger models demand more GPU memory, limiting edge deployment.</li>
+  <li><strong>Efficient Techniques</strong>: Token pruning (SpAtten) and quantization (SmoothQuant, AWQ).</li>
+  <li><strong>Edge Deployment</strong>: Privacy and offline needs drive edge deployment efforts.</li>
+</ul>
+
+<h3 id="5-multimodal-learning-and-vision-language-models-">5. Multimodal Learning and Vision-Language Models 🎥📝</h3>
+<ul>
+  <li><strong>Vision-Language Models</strong>: Covers models like LLaVA for image-text tasks (e.g., captioning).</li>
+  <li><strong>Efficiency</strong>: Uses quantization methods (AWQ) for computational efficiency.</li>
+  <li><strong>Data and Training</strong>: High-quality data and robust training essential for multimodal learning.</li>
+</ul>
+
+<h3 id="6-hardware-trends-and-the-role-of-software-">6. Hardware Trends and the Role of Software 💾</h3>
+<ul>
+  <li><strong>GPU Trends</strong>: Higher performance and memory bandwidth with increased power usage.</li>
+  <li><strong>Mobile &amp; Edge Hardware</strong>: Specialized AI units (e.g., Qualcomm Hexagon) but limited memory.</li>
+  <li><strong>Microcontrollers</strong>: TinyML needs extreme efficiency due to tight memory constraints.</li>
+  <li><strong>Software Optimization</strong>: Critical for maximizing hardware potential in complex models.</li>
+</ul>
+
+<h4 id="debriefing-ai-hardware-cloud-vs-edge-️">Debriefing AI Hardware: Cloud vs. Edge 🖥️📱</h4>
+
+<p>Cloud GPUs and edge devices highlight different strengths:</p>
+<ul>
+  <li><strong>Cloud GPUs</strong>: Performance gains from P100 to B100 (2024) offer 100x dense FP16 performance; memory bandwidth doubled.</li>
+  <li><strong>Edge Hardware</strong>: Mobile AI units like Qualcomm’s Hexagon DSP allow efficient on-device AI, while Jetson targets high-performance applications.</li>
+  <li><strong>Memory Gap</strong>: Cloud GPUs support GBs of memory, MCUs only a few KBs, necessitating model compression for edge use.</li>
+</ul>
+
+<h3 id="7-system-algorithm-co-design-">7. System-Algorithm Co-Design 🤝</h3>
+<ul>
+  <li><strong>System-Algorithm Interaction</strong>: Understanding hardware-algorithm interplay is crucial.</li>
+  <li><strong>Full-Stack Optimization</strong>: Combining EE, CS, and AI knowledge to drive innovation.</li>
+</ul>
+
+<h3 id="8-course-logistics-">8. Course Logistics 📅</h3>
+<ul>
+  <li><strong>Prerequisites</strong>: Computer architecture (6.191) and machine learning (6.390).</li>
+  <li><strong>Hands-On Labs</strong>: Includes pruning, quantization, neural architecture search, LLM compression, and deployment.</li>
+  <li><strong>Grading</strong>: Labs (75%), final project (25%), 4% participation bonus.</li>
+</ul>
+
+<hr />
+
+<h2 id="-key-takeaways">📝 Key Takeaways</h2>
+<ul>
+  <li><strong>Efficiency as a Priority</strong>: Rising model complexity demands efficient solutions.</li>
+  <li><strong>Model Compression</strong>: Techniques like pruning and quantization are essential.</li>
+  <li><strong>System-Algorithm Co-Design</strong>: Holistic approach for high performance and efficiency.</li>
+  <li><strong>Comprehensive Learning</strong>: Prepares students to tackle modern AI challenges.</li>
+</ul>
+
+<p>This lecture lays the foundation for exploring efficient deep learning throughout the semester.</p>
+
+<h2 id="quiz-">Quiz 📝</h2>
+
+<h3 id="instructions">Instructions</h3>
+<p>Answer the following questions in <strong>2-3 sentences</strong> each.</p>
+
+<hr />
+
+<h3 id="questions-">Questions 🔍</h3>
+
+<ol>
+  <li><strong>Why is efficient deep learning computing increasingly necessary?</strong></li>
+  <li><strong>What event in 2012 marked a significant shift in the field of deep learning, and what was its primary contribution?</strong></li>
+  <li><strong>What are two advantages of on-device training for AI systems?</strong></li>
+  <li><strong>Describe one technique used to improve the efficiency of promptable image segmentation models.</strong></li>
+  <li><strong>Why are diffusion models computationally expensive, especially for generating high-resolution images or videos?</strong></li>
+  <li><strong>What is the primary challenge in aligning representations from different input modalities in multimodal learning?</strong></li>
+  <li><strong>How does the concept of “chain of thought” enhance the problem-solving capabilities of large language models?</strong></li>
+  <li><strong>Explain the rationale behind using pruning techniques to accelerate language models.</strong></li>
+  <li><strong>What is the main advantage of using quantization techniques like SmoothQuant and AWQ for deploying large language models on edge devices?</strong></li>
+  <li><strong>Explain the concept of visual in-context learning in the context of vision-language models.</strong></li>
+</ol>
+
+<hr />
+
+<h3 id="answer-key-️">Answer Key 🗝️</h3>
+
+<ol>
+  <li>
+    <p><strong>Efficient Deep Learning Computing Necessity</strong><br />
+Efficient deep learning computing is crucial because the computational demands of AI models are increasing rapidly, outpacing hardware growth. This disparity creates challenges in cost, energy consumption, and deploying models on resource-constrained devices. ⚙️</p>
+  </li>
+  <li>
+    <p><strong>2012 Breakthrough in Deep Learning</strong><br />
+The advent of <em>AlexNet</em> in 2012 revolutionized deep learning by showcasing the effectiveness of CNNs for image classification on ImageNet. AlexNet’s deep architecture and GPU usage sparked significant advancements in computer vision and deep learning. 📈</p>
+  </li>
+  <li>
+    <p><strong>On-Device Training Advantages</strong><br />
+On-device training enhances <em>privacy</em> by processing data locally, removing the need to send sensitive data to the cloud. It also reduces <em>costs</em> by minimizing data transfer and cloud computing expenses, making AI applications more accessible. 🔒💸</p>
+  </li>
+  <li>
+    <p><strong>Efficient Promptable Image Segmentation</strong><br />
+EfficientViT is an optimized Vision Transformer (ViT) architecture used for promptable image segmentation. It speeds up segmentation models like SAM by minimizing redundancy and streamlining the processing pipeline. 🚀</p>
+  </li>
+  <li>
+    <p><strong>Computational Cost of Diffusion Models</strong><br />
+Diffusion models are computationally intensive due to their iterative denoising process. Generating high-resolution images or videos requires numerous steps, each needing substantial computation. 💻</p>
+  </li>
+  <li>
+    <p><strong>Challenge in Multimodal Learning</strong><br />
+The primary challenge in multimodal learning is aligning different input modalities (images, text, audio) into a shared representation space. This alignment is essential for the model to understand relationships between modalities and make accurate predictions. 🎨📝</p>
+  </li>
+  <li>
+    <p><strong>“Chain of Thought” in Large Language Models</strong><br />
+“Chain of thought” prompting guides LLMs to break down problems into smaller reasoning steps, enabling more logical solutions. This approach improves the model’s ability to solve complex tasks. 🔗🧠</p>
+  </li>
+  <li>
+    <p><strong>Pruning for Language Model Acceleration</strong><br />
+Pruning reduces model size by removing redundant connections in neural networks, or tokens in language models, to improve efficiency. This approach speeds up inference without significantly impacting performance. ✂️</p>
+  </li>
+  <li>
+    <p><strong>Quantization for Edge Device Deployment</strong><br />
+Techniques like SmoothQuant reduce numerical precision of model parameters, typically from 16-bit to lower bit-widths like 4-bit. This allows large models to fit within edge device memory while maintaining accuracy. 🔢📱</p>
+  </li>
+  <li>
+    <p><strong>Visual In-Context Learning in Vision-Language Models</strong><br />
+Visual in-context learning enables models to understand tasks from a few labeled examples, without explicit instructions. For example, a model can learn to identify cities in images after being shown a few image-city pairs. 🖼️🔍</p>
+  </li>
+</ol>
+
+<hr />
+
+<h3 id="essay-questions-️">Essay Questions 🖋️</h3>
+
+<ol>
+  <li>
+    <p><strong>Trade-Offs Between Model Accuracy and Efficiency</strong><br />
+Discuss the trade-offs in deploying deep learning models on edge devices, considering computational resources, power constraints, and application requirements.</p>
+  </li>
+  <li>
+    <p><strong>Neural Architecture Search (NAS) in Efficient Model Development</strong><br />
+Explain the role of NAS in designing efficient deep learning models. Compare different NAS approaches, their strengths, and limitations.</p>
+  </li>
+  <li>
+    <p><strong>Challenges of Training Large Language Models on Resource-Constrained Devices</strong><br />
+Describe techniques to reduce the computational and memory requirements of training LLMs on resource-constrained devices. Discuss associated challenges and opportunities.</p>
+  </li>
+  <li>
+    <p><strong>Ethical Considerations in Deploying Efficient Deep Learning Models</strong><br />
+Consider the ethics of deploying efficient AI models in areas like facial recognition and autonomous driving, including potential biases and privacy concerns.</p>
+  </li>
+  <li>
+    <p><strong>Future Directions in Efficient Deep Learning Computing</strong><br />
+Explore future directions in efficient deep learning, considering new hardware architectures, novel compression techniques, and AI sustainability.</p>
+  </li>
+</ol>
+
+<hr />
+
+<h3 id="glossary-">Glossary 📘</h3>
+
+<ul>
+  <li><strong>AlexNet</strong>: A groundbreaking CNN architecture that highlighted deep learning’s power for image classification.</li>
+  <li><strong>Chain of Thought Prompting</strong>: Enhances LLM reasoning by guiding them to break down complex problems into steps.</li>
+  <li><strong>Diffusion Model</strong>: Generative model creating images/videos via iterative denoising from random noise.</li>
+  <li><strong>Efficient Deep Learning Computing</strong>: Field dedicated to reducing computational and memory demands of deep learning, enabling deployment on resource-limited devices.</li>
+  <li><strong>GAN Compression</strong>: Reduces computational cost in GANs through pruning, knowledge distillation, etc.</li>
+  <li><strong>ImageNet</strong>: Large dataset of labeled images for training/evaluating computer vision models.</li>
+  <li><strong>Large Language Model (LLM)</strong>: Model trained on massive text data, generating human-like text and language tasks.</li>
+  <li><strong>Multimodal Learning</strong>: Processes and understands information from multiple modalities (images, text, etc.).</li>
+  <li><strong>Neural Architecture Search (NAS)</strong>: Automates neural network design, optimizing configurations.</li>
+  <li><strong>On-Device Training</strong>: Training AI models directly on edge devices, benefiting privacy, cost, and customization.</li>
+  <li><strong>Pruning</strong>: Compresses networks by removing connections/neurons deemed less important.</li>
+  <li><strong>Quantization</strong>: Reduces precision of numerical values in model parameters, lowering model size.</li>
+  <li><strong>SmoothQuant</strong>: Quantization technique that smooths activation distribution, improving quantization.</li>
+  <li><strong>TinyML</strong>: Focuses on deploying deep learning models on ultra-low-power microcontrollers.</li>
+  <li><strong>Vision Transformer (ViT)</strong>: Applies transformer architecture (for language) to vision tasks.</li>
+  <li><strong>Visual In-Context Learning</strong>: Vision-language model capability to infer tasks from few visual examples.</li>
+  <li><strong>Visual Language Model</strong>: Trained on image-text data, understanding and generating visual and textual info.</li>
+</ul>
+
+<hr />]]></content><author><name>Leon Liu</name></author><category term="Course" /><category term="TLDR" /><category term="tinyml" /><category term="llm" /><summary type="html"><![CDATA[TinyML 2024 Lecture 1 🌱]]></summary></entry><entry><title type="html">Introduction of Quantization</title><link href="http://localhost:4000/llm/2024/06/01/quantization-introduction.html" rel="alternate" type="text/html" title="Introduction of Quantization" /><published>2024-06-01T00:00:00-04:00</published><updated>2024-06-01T00:00:00-04:00</updated><id>http://localhost:4000/llm/2024/06/01/quantization-introduction</id><content type="html" xml:base="http://localhost:4000/llm/2024/06/01/quantization-introduction.html"><![CDATA[<h1 id="overview-of-quantization">Overview of Quantization</h1>
 
 <!-- toc -->
 

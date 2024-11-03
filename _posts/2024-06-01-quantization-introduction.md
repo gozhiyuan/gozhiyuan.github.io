@@ -4,7 +4,7 @@ title: Introduction of Quantization
 subtitle:
 categories: LLM
 tags: [quantization, llm]
-banner: "/assets/images/banners/yuanpang-wa-iceburg.jpg"
+banner: "/assets/images/banners/yuanpang-wa-lake.jpg"
 ---
 
 # Overview of Quantization
