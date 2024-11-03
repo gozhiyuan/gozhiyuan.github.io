@@ -161,7 +161,7 @@ header_pages:
 defaults:
   home:
     heading: "✏ Welcome to Yuanpang Blog"
-    subheading: "Hey this is Leon. You can also call me Zhiyuan or Yuanpang. I'm passionate about new technologies. In this blog, I document my learning notes and experiences. Thanks for reading!"
+    subheading: "👋 Hi there, I’m Leon—though you might know me as Zhiyuan or Yuanpang! Welcome to my blog, where I share my learning notes, experiences, and insights on AI and tech. Spoiler alert: I lean heavily on AI to keep things flowing smoothly! Thanks for dropping by and happy reading!"
     banner: "Your image url"
 
 # Banner default settings
