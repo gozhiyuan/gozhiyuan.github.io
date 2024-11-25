@@ -1,27 +1,29 @@
 <!DOCTYPE html>
-<html lang="{{ page.lang | default: site.lang | default: "en" }}">
+<html lang="{{ page.lang | default: site.lang | default: " en" }}">
 
-  {%- include head.html -%}
+{%- include head.html -%}
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-  <body>
+<body>
 
-    {%- include views/header.html -%}
+  {%- include views/header.html -%}
 
-    {%- include views/banner.html -%}
+  {%- include views/banner.html -%}
 
-    {%- include extensions/hashlocate.html -%}
+  {%- include extensions/hashlocate.html -%}
 
-    {%- include extensions/theme-toggle.html -%}
+  {%- include extensions/theme-toggle.html -%}
 
-    {%- include extensions/click-to-top.html -%}
+  {%- include extensions/click-to-top.html -%}
 
-    <main class="page-content" aria-label="Content">
-      <div class="wrapper">
-        {{ content }}
-      </div>
-    </main>
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+      {{ content }}
+    </div>
+  </main>
 
-    {%- include views/footer.html -%}
+  {%- include views/footer.html -%}
 
-  </body>
+</body>
+
 </html>
