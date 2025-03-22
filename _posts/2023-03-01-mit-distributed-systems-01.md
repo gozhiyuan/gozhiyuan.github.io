@@ -1,8 +1,8 @@
 ---
 layout: post
-title: Distributed Systems Lecture 1
-subtitle: Introduction and MapReduce
-categories: Course-TLDR distributed-systems
+title: Distributed Systems Introduction and MapReduce Lecture 1
+subtitle: Distributed Systems Lecture 1
+categories: Course-TLDR
 tags: [distributed-systems]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---

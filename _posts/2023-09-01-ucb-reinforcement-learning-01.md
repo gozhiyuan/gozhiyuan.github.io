@@ -1,13 +1,13 @@
 ---
 layout: post
-title: Reinforcement Learning Lecture 1
-subtitle: Introduction
-categories: Course-TLDR reinforcement-learning
+title: Reinforcement Learning Introduction
+subtitle: Reinforcement Learning Lecture 1
+categories: Course-TLDR
 tags: [reinforcement-learning]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 
-## 🤖 Deep Reinforcement Learning Lecture 1
+## 🤖 Deep Reinforcement Learning
 
 This briefing document reviews the main themes and key takeaways from a collection of sources focused on deep reinforcement learning (Deep RL), including insights from CS 285 lectures and supplementary materials.
 

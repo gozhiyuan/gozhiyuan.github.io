@@ -2,7 +2,7 @@
 layout: post
 title: Recommender System 3 -- Ranking
 subtitle:
-categories: Course-TLDR recommender-system
+categories: YouTube
 tags: [recommender-system]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---

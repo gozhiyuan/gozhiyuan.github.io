@@ -2,7 +2,7 @@
 layout: post
 title: Regression vs. Survival Analysis 🚀
 subtitle:
-categories: ML
+categories: blog
 tags: [regression, survival-analysis, ml]
 banner: "/assets/images/banners/yuanpang-wa-sky.jpg"
 ---

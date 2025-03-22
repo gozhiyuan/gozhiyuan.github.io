@@ -2,7 +2,7 @@
 layout: post
 title: Introduction of Quantization
 subtitle:
-categories: LLM
+categories: blog
 tags: [quantization, llm]
 banner: "/assets/images/banners/yuanpang-wa-lake.jpg"
 ---

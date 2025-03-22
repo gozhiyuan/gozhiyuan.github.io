@@ -2,8 +2,8 @@
 layout: post
 title: How to evaluate NLP tasks
 subtitle:
-categories: LLM NLP
-tags: [nlp, llm, evaluation]
+categories: blog
+tags: [nlp]
 banner: "/assets/images/banners/yuanpang-wa-lake.jpg"
 ---
 
