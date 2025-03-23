@@ -222,3 +222,10 @@ plugins:
   - jekyll-sitemap
   - jekyll-paginate
   - jekyll-spaceship
+
+# Optional: Add feed configuration if needed
+feed:
+  path: feed.xml
+
+include:
+  - favicon.ico

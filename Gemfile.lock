@@ -148,6 +148,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (>= 1.6, < 3.0)
+  jekyll-feed (~> 0.15)
   jekyll-theme-yat!
   rake (>= 12.0, < 13.0)
 
