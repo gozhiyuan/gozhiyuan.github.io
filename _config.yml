@@ -212,9 +212,10 @@ defaults:
 # Build settings
 # highlighter: none
 markdown: kramdown
-kmarkdown:
+kramdown:
   input: GFM
-  math_engine: mathjax
+
+
 
 plugins:
   - jekyll-feed
@@ -222,6 +223,15 @@ plugins:
   - jekyll-sitemap
   - jekyll-paginate
   - jekyll-spaceship
+
+jekyll-spaceship:
+  processors:
+    - table-processor
+    - emoji-processor
+    - iframe-processor
+    - media-processor
+    - syntax-processor
+    # 👇 intentionally omit mathjax-processor
 
 # Optional: Add feed configuration if needed
 feed:

@@ -3,15 +3,46 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+  
   {%- seo -%}
+
   <link rel="icon" href="{{ site.favicon }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
   <link rel="stylesheet" href="{{ "/assets/css/main.css" | relative_url }}">
+
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+
   <script src="{{ "/assets/js/main.js" | relative_url }}"></script>
+
+  <!-- KaTeX JS -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+
+  <!-- KaTeX auto-render setup -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      function waitForKaTeXRender() {
+        if (typeof renderMathInElement === "function") {
+          renderMathInElement(document.body, {
+            delimiters: [
+              { left: "$$", right: "$$", display: true },
+              { left: "$", right: "$", display: false }
+            ],
+            throwOnError: false
+          });
+        } else {
+          setTimeout(waitForKaTeXRender, 50);
+        }
+      }
+      waitForKaTeXRender();
+    });
+  </script>
+
   {%- feed_meta -%}
   {%- if jekyll.environment == 'production' and site.google_analytics -%}
-  {%- include extensions/google-analytics.html -%}
+    {%- include extensions/google-analytics.html -%}
   {%- endif -%}
   {%- include extensions/code-highlight.html -%}
   {%- include extensions/photo-swipe.html -%}
