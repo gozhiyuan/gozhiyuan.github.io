@@ -2,7 +2,7 @@
 layout: post
 title: Reinforcement Learning Introduction
 subtitle: Reinforcement Learning Lecture 1
-categories: Course-TLDR
+categories: UCB-Deep-Reinforcement-Learning-2023
 tags: [reinforcement-learning]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---

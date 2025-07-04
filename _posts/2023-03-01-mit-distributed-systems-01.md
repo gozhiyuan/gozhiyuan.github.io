@@ -2,7 +2,7 @@
 layout: post
 title: Distributed Systems Introduction and MapReduce Lecture 1
 subtitle: Distributed Systems Lecture 1
-categories: Course-TLDR
+categories: MIT-Distributed-Systems-2021
 tags: [distributed-systems]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
