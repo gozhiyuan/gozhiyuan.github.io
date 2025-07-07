@@ -1,6 +1,6 @@
 ---
 layout: post
-title: DeepSeek Models Series II
+title: DeepSeek Reasoning Models Series
 subtitle: Reasoning Models
 categories: blog
 tags: [llm]

@@ -106,7 +106,7 @@ Learning = **Tightly integrated and adaptive**, while traditional = **Modular an
 
 ## IV. 📚 Course Structure and Topics
 
-![alt_text](/assets/images/robotics/01/1.png "image_tooltip")
+![alt_text](/assets/images/robot-learning/01/1.png "image_tooltip")
 
 ### 📌 Topics Overview:
 1. **Intro to Robot Learning** (Lectures 1–2)

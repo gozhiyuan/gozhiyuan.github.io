@@ -1,6 +1,6 @@
 ---
 layout: post
-title: DeepSeek Models Series I
+title: DeepSeek Base Models Series
 subtitle: Base Models
 categories: blog
 tags: [llm]

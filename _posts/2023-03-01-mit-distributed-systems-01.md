@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Distributed Systems Introduction and MapReduce Lecture 1
+title: Distributed Systems Introduction and MapReduce
 subtitle: Distributed Systems Lecture 1
 categories: MIT-Distributed-Systems-2021
 tags: [distributed-systems]
