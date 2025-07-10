@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Imitation Learning via Privileged Teachers and Generative Models like Diffusions
+title: Imitation Learning via Privileged Teachers and Generative Models like Diffusion
 subtitle: Robot Learning Lecture 6
 categories: CMU-Robot-Learning-2024
 tags: [robot]
@@ -12,7 +12,6 @@ banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 This lecture builds upon previous discussions on Imitation Learning (IL) and delves into advanced techniques and current research areas.
 
 [Course link](https://16-831-s24.github.io/)
-
 
 
 ## 🔁 1. Recap of Previous Lecture (Imitation Learning Part 1)
@@ -240,15 +239,15 @@ Diffusion Policy treats **trajectory generation** as a **generative modeling** p
 2. **Forward Process (Noise Addition)**:
    - Sample noise level $( t \sim \{1, ..., T\} )$
    - Corrupt expert actions:
-     $[
-     a_{1:T}^{(t)} = \sqrt{\bar{\alpha}_t} a_{1:T} + \sqrt{1 - \bar{\alpha}_t} \cdot \epsilon, \quad \epsilon \sim \mathcal{N}(0, I)
-     ]$
+     $$
+     a_{1:T}^{(t)} = \sqrt{\bar{\alpha}_t} \cdot a_{1:T} + \sqrt{1 - \bar{\alpha}_t} \cdot \epsilon,\quad \epsilon \sim \mathcal{N}(0, I)
+     $$
 
 3. **Reverse Process (Training Objective)**:
    - Train the model to **predict the added noise** $( \epsilon )$ or the clean action:
-     $[
+     $$
      \mathcal{L} = \mathbb{E}_{a_{1:T}, \epsilon, t} \left[ \left\| \hat{\epsilon}_\theta(o_{1:T}, a_{1:T}^{(t)}, t) - \epsilon \right\|^2 \right]
-     ]$
+     $$
 
 
 ### 🏁 Inference (Trajectory Generation)
