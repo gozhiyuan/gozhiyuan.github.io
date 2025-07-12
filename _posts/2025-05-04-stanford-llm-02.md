@@ -11,6 +11,22 @@ banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 
 
 This blog summarizes key concepts from Stanford CS336 Lecture 2, focusing on PyTorch primitives, efficient resource accounting (memory and compute), and foundational elements of training deep learning models from scratch.
+```
+Memory
+    # Parameters
+    num_parameters = (D * D * num_layers) + D  # @inspect num_parameters
+    assert num_parameters == get_num_parameters(model)
+    # Activations
+    num_activations = B * D * num_layers  # @inspect num_activations
+    # Gradients
+    num_gradients = num_parameters  # @inspect num_gradients
+    # Optimizer states
+    num_optimizer_states = num_parameters  # @inspect num_optimizer_states
+    # Putting it all together, assuming float32
+    total_memory = 4 * (num_parameters + num_activations + num_gradients + num_optimizer_states)
+Compute (for one step)
+    flops = 6 * B (tokens) * num_parameters
+```
 
 [Course link](https://stanford-cs336.github.io/spring2025/)
 
