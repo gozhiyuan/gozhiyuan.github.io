@@ -2,14 +2,14 @@
 layout: post
 title: Distributed Systems Introduction and MapReduce
 subtitle: Distributed Systems Lecture 1
-categories: MIT-Distributed-Systems-2021
-tags: [distributed-systems]
+categories: Distributed-Systems
+tags: [MIT-Distributed-Systems-2021]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 
 [Course Link](https://pdos.csail.mit.edu/6.824/schedule.html)
 
-## 🌐 What is a Distributed System?
+# 🌐 What is a Distributed System?
 
 - A **distributed system** is a collection of computers that communicate over a network to perform a task together.
 

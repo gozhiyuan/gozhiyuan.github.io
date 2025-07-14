@@ -2,8 +2,8 @@
 layout: post
 title: LLM Agents Introduction
 subtitle: LLM Agents Lecture 2
-categories: Course-TLDR
-tags: [llm-agents]
+categories: LLM-Agents
+tags: [UCB-LLM-Agents-2024]
 banner: "/assets/images/banners/yuanpang-wa-sky.jpg"
 ---
 

@@ -2,8 +2,8 @@
 layout: post
 title: Markov Decision Processes (MDP) Basics and Imitation Learning
 subtitle: Robot Learning Lecture 5
-categories: CMU-Robot-Learning-2024
-tags: [robot]
+categories: Robotics
+tags: [CMU-Robot-Learning-2024]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
 
@@ -139,7 +139,7 @@ Sequential decision-making in robotics is formalized using MDPs and POMDPs:
 
 #### 📘 Imitation Learning (IL)
 
-Imitation Learning is a technique in sequential decision-making where the goal is to **mimic expert behavior** from demonstrations (e.g., \((s_t, a_t)\) pairs). The most common form is **Behavior Cloning (BC)**, which simply treats IL as a supervised learning problem.
+Imitation Learning is a technique in sequential decision-making where the goal is to **mimic expert behavior** from demonstrations (e.g., $((s_t, a_t))$ pairs). The most common form is **Behavior Cloning (BC)**, which simply treats IL as a supervised learning problem.
 
 #### 🔄 Is Imitation Learning Just Continuous Supervised Learning?
 
@@ -169,7 +169,7 @@ In supervised learning, if the same input maps to different outputs during train
 #### 🧱 Sequential Nature & Cascading Errors
 
 - In IL, actions influence **future states**.
-- A small prediction error at time \( t \) can lead the agent into a state **never seen** in the training data (since the expert never made that mistake).
+- A small prediction error at time $( t )$ can lead the agent into a state **never seen** in the training data (since the expert never made that mistake).
 - This causes a **distribution shift** and leads to **cascading errors**.
 
 #### 🧠 Example: Cliff Walking

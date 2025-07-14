@@ -2,12 +2,12 @@
 layout: post
 title: Anatomy of a Manipulation System
 subtitle: Lecture 1 Introduction
-categories: MIT-Robotic-Manipulation-2023
-tags: [robot]
+categories: Robotic
+tags: [MIT-Robotic-Manipulation-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 
-## 1. Defining Robotic Manipulation
+# 1. Defining Robotic Manipulation
 
 The lecture delves into a nuanced definition of robotic manipulation, moving beyond simple object handling to encompass complex interactions within dynamic and unstructured environments.
 

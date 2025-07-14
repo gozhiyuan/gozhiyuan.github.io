@@ -2,8 +2,8 @@
 layout: post
 title: DeepSeek Base Models Series
 subtitle: Base Models
-categories: blog
-tags: [llm]
+categories: Large-Language-Model
+tags: [Blog]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
 

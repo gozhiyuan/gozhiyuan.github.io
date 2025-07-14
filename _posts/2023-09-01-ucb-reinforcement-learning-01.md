@@ -2,12 +2,12 @@
 layout: post
 title: Reinforcement Learning Introduction
 subtitle: Reinforcement Learning Lecture 1
-categories: UCB-Deep-Reinforcement-Learning-2023
-tags: [reinforcement-learning]
+categories: Reinforcement-Learning
+tags: [UCB-Deep-Reinforcement-Learning-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 
-## 🤖 Deep Reinforcement Learning
+# 🤖 Deep Reinforcement Learning
 
 This briefing document reviews the main themes and key takeaways from a collection of sources focused on deep reinforcement learning (Deep RL), including insights from CS 285 lectures and supplementary materials.
 

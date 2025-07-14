@@ -2,8 +2,8 @@
 layout: post
 title: Reinforcement Learning Introduction
 subtitle: Reinforcement Learning Lecture 3
-categories: UCB-Deep-Reinforcement-Learning-2023
-tags: [reinforcement-learning]
+categories: Reinforcement-Learning
+tags: [UCB-Deep-Reinforcement-Learning-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 
@@ -175,7 +175,7 @@ It estimates the total expected reward when starting at $(s_t, a_t)$ and followi
 
 🧠 *If I’m in state* $( s_t )$, *and I follow policy* $( \pi )$ *from now on, without deciding on the action myself, what is my expected return?*
 
-- 📊 It **averages** over the actions the policy \( \pi \) would choose at that state
+- 📊 It **averages** over the actions the policy $( \pi )$ would choose at that state
 
 
 A value function $V^\pi(s_t)$ is:  

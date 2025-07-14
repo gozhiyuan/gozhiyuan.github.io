@@ -2,8 +2,8 @@
 layout: post
 title: DeepSeek Reasoning Models Series
 subtitle: Reasoning Models
-categories: blog
-tags: [llm]
+categories: Large-Language-Model
+tags: [Blog]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
 

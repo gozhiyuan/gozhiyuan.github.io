@@ -2,8 +2,8 @@
 layout: post
 title: Language Modeling from Scratch Overview and Tokenization
 subtitle: Language Modeling from Scratch Lecture 1
-categories: Stanford-LLM-From-Scratch-2025
-tags: [llm]
+categories: Large-Language-Model
+tags: [Stanford-LLM-From-Scratch-2025]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
 

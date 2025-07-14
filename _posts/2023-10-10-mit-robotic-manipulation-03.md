@@ -2,12 +2,12 @@
 layout: post
 title: Robot Basic Pick and Place I
 subtitle: Lecture 3 Basic Pick and Place (Pt. 1)
-categories: MIT-Robotic-Manipulation-2023
-tags: [robot]
+categories: Robotic
+tags: [MIT-Robotic-Manipulation-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 
-## 🤖 Basic Pick and Place - Kinematics and Spatial Algebra 
+# 🤖 Basic Pick and Place - Kinematics and Spatial Algebra 
 
 The lecture covers foundational techniques for robot manipulation, especially pick-and-place tasks, with a focus on kinematics and spatial algebra.
 
@@ -106,7 +106,7 @@ A core challenge in robotic manipulation is commanding a robot to move an object
 - **Euler Angles (RPY)**: Order matters, susceptible to gimbal lock
 - **Axis-Angle**: Rotation vector
 - **Unit Quaternions**:  
-  Represented by \( (w, x, y, z) \), with:
+  Represented by $( (w, x, y, z) )$, with:
 
   $$
   w^2 + x^2 + y^2 + z^2 = 1

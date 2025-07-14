@@ -2,8 +2,8 @@
 layout: post
 title: Recommender System 3 -- Ranking
 subtitle:
-categories: YouTube
-tags: [recommender-system]
+categories: Recommender-System
+tags: [YouTube]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 

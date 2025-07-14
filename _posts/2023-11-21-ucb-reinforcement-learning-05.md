@@ -2,8 +2,8 @@
 layout: post
 title: Policy Gradients in Reinforcement Learning
 subtitle: Reinforcement Learning Lecture 5
-categories: UCB-Deep-Reinforcement-Learning-2023
-tags: [reinforcement-learning]
+categories: Reinforcement-Learning
+tags: [UCB-Deep-Reinforcement-Learning-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 

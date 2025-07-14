@@ -2,12 +2,12 @@
 layout: post
 title: Recommender System 1 -- Introduction
 subtitle:
-categories: YouTube
-tags: [recommender-system]
+categories: Recommender-System
+tags: [YouTube]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
 
-## 📊 Recommendation System Overview
+# 📊 Recommendation System Overview
 
 This guide dives into the essentials of recommendation systems, with a focus on key metrics, experimentation methods, and the underlying architecture. Whether you're a beginner or looking to deepen your understanding of recommendation strategies, this will give you a structured breakdown of critical components.
 

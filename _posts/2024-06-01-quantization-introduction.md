@@ -2,8 +2,8 @@
 layout: post
 title: Introduction of Quantization
 subtitle:
-categories: blog
-tags: [quantization, llm]
+categories: Model-Quantization Large-Language-Model
+tags: [Blog]
 banner: "/assets/images/banners/yuanpang-wa-lake.jpg"
 ---
 

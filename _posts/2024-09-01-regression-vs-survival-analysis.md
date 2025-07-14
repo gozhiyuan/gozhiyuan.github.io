@@ -2,13 +2,13 @@
 layout: post
 title: Regression vs. Survival Analysis 🚀
 subtitle:
-categories: blog
-tags: [regression, survival-analysis, ml]
+categories: Regression Survival-Analysis
+tags: [Blog]
 banner: "/assets/images/banners/yuanpang-wa-sky.jpg"
 ---
 
 
-## Predicting Customer Churn: Regression vs. Survival Analysis 🚀
+# Predicting Customer Churn: Regression vs. Survival Analysis 🚀
 
 When it comes to predicting **customer churn**, the choice between **regression** and **survival analysis** depends on your data and objectives. While regression models may seem simpler, survival analysis is often better suited for time-to-event problems, especially when dealing with censored data. Let’s dive into this comparison! 🔍
 
@@ -55,7 +55,7 @@ If these conditions aren’t met, you might face biased results and limited insi
 
 ### How It Works:
 Survival analysis models the **time until an event occurs** (e.g., churn), accounting for censored data. It predicts:
-- **Survival probability**: Likelihood a customer survives (doesn’t churn) beyond time \(t\).
+- **Survival probability**: Likelihood a customer survives (doesn’t churn) beyond time $(t)$.
 - **Hazard function**: Risk of churn at a specific time.
 
 ### Pros ✅:
@@ -86,9 +86,9 @@ Survival analysis models the **time until an event occurs** (e.g., churn), accou
 
 ## 🔍 How Survival Analysis Predicts Days Left
 
-### Example: Survival Function \(S(t)\)
-The survival function \(S(t)\) estimates the probability that a customer **survives (doesn’t churn)** beyond time \(t\):
-- \(S(90) = 0.7\): The customer has a 70% chance of staying active after 90 days.
+### Example: Survival Function $(S(t))$
+The survival function $(S(t))$ estimates the probability that a customer **survives (doesn’t churn)** beyond time $(t)$:
+- $(S(90) = 0.7)$: The customer has a 70% chance of staying active after 90 days.
 
 ### Predicting Remaining Time:
 1. **Expected Remaining Time**:
@@ -97,7 +97,7 @@ The survival function \(S(t)\) estimates the probability that a customer **survi
    E(T) = \int_0^\infty S(t) \, dt
    ] $
 2. **Median Churn Time**:
-   Find the time point where \(S(t) = 0.5\), i.e., a 50% chance of churn.
+   Find the time point where $(S(t) = 0.5)$, i.e., a 50% chance of churn.
 
 ---
 
@@ -139,8 +139,8 @@ When analyzing **time-to-event data** (e.g., customer churn), two powerful techn
 The **Kaplan-Meier estimator** is a non-parametric method to calculate the **survival probability over time**. It makes **no assumptions** about the underlying survival distribution and is excellent for visualizing and exploring survival patterns.
 
 ### Key Concepts:
-1. **Survival Function \(S(t)\)**:
-   - \(S(t) = P(T > t)\): The probability that a subject survives beyond time \(t\).
+1. **Survival Function $(S(t))$**:
+   - $(S(t) = P(T > t))$: The probability that a subject survives beyond time $(t)$.
    
 2. **Event Times and Censoring**:
    - Accounts for both **events** (e.g., churn) and **censored data** (e.g., active customers).
@@ -201,9 +201,9 @@ The **Cox Proportional Hazards model** is a **semi-parametric method** that esti
    $[
    h(t|X) = h_0(t) \exp(\beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p)
    ]$
-   - \( h_0(t) \): Baseline hazard (shared across all individuals).
-   - \( X_i \): Covariates (e.g., customer behavior).
-   - \( \beta_i \): Coefficients reflecting the effect of covariates.
+   - $( h_0(t) )$: Baseline hazard (shared across all individuals).
+   - $( X_i )$: Covariates (e.g., customer behavior).
+   - $( \beta_i )$: Coefficients reflecting the effect of covariates.
 
 2. **Proportional Hazards Assumption**:
    - The ratio of hazard rates between two individuals is constant over time.

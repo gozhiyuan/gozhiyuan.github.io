@@ -2,8 +2,8 @@
 layout: post
 title: What is Robot Learning
 subtitle: Robot Learning Lecture 1
-categories: CMU-Robot-Learning-2024
-tags: [robot]
+categories: Robotics
+tags: [CMU-Robot-Learning-2024]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
 

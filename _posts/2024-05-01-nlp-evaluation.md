@@ -2,8 +2,8 @@
 layout: post
 title: How to evaluate NLP tasks
 subtitle:
-categories: blog
-tags: [nlp]
+categories: NLP
+tags: [Blog]
 banner: "/assets/images/banners/yuanpang-wa-lake.jpg"
 ---
 
