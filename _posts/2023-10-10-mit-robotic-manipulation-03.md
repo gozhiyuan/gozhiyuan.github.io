@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Robot Basic Pick and Place I
+title: Robot Basic Pick and Place I - kinematics and trajectories 
 subtitle: Lecture 3 Basic Pick and Place (Pt. 1)
 categories: Robotic
 tags: [MIT-Robotic-Manipulation-2023]
@@ -273,6 +273,76 @@ $$
 
 - $( q )$: joint angles (configuration)  
 - $( X^G )$: gripper pose
+
+If you know the robot's joint angles (q), forward kinematics tells you where the gripper is in 3D space.
+
+- Input: joint positions
+- Output: gripper's pose (position + orientation)
+
+This is typically done using:
+- Denavit–Hartenberg parameters (classical method)
+- Matrix multiplication of local transforms
+- Modern tools: KDL, MoveIt!, Drake, etc.
+
+
+#### 🔧 Joint Configuration: $( q )$
+
+- $$ q \in \mathbb{R}^n $$
+- Where $( n )$ is the number of joints (e.g., revolute or prismatic).
+- Each element of $( q )$ corresponds to one degree of freedom (DoF).
+
+**Example:**  
+For a 2-joint robot arm with revolute joints:
+
+$$
+q = \begin{bmatrix} \theta_1 \\ \theta_2 \end{bmatrix} = \begin{bmatrix} 1.0 \\ 2.0 \end{bmatrix}
+$$
+
+This means joint 1 is at 1 radian, joint 2 is at 2 radians.
+
+
+#### 🤖 Gripper Pose: $( X^G )$
+
+- $$ X^G \in \mathbb{R}^6 \quad \text{or} \quad SE(3) $$
+- Describes the **pose** of the end-effector (position + orientation)
+
+#### If represented as a 6D vector:
+
+$$
+X^G = \begin{bmatrix} x \\ y \\ z \\ \alpha \\ \beta \\ \gamma \end{bmatrix}
+$$
+
+- $( (x, y, z) )$: Position in 3D space  
+- $( (\alpha, \beta, \gamma) )$: Orientation in Euler angles or axis-angle
+
+#### If represented in **SE(3)**:
+
+$$
+X^G = T = 
+\begin{bmatrix}
+R & t \\
+0 & 1
+\end{bmatrix}
+$$
+
+Where:  
+- $( R \in SO(3) )$: 3×3 rotation matrix  
+- $( t \in \mathbb{R}^3 )$: 3D translation vector
+
+**Example (in 6D vector form):**
+
+$$
+X^G = \begin{bmatrix} 0.5 \\ 0.2 \\ 0.1 \\ 0.0 \\ 1.57 \\ 0.0 \end{bmatrix}
+$$
+
+→ The gripper is at position (0.5, 0.2, 0.1) with a pitch of 90° (1.57 rad).
+
+
+| Quantity       | Symbol     | Dimension                      | Description                         |
+|----------------|------------|--------------------------------|-------------------------------------|
+| Joint config   | $( q )$    | $( \mathbb{R}^n )$             | Joint angles or positions           |
+| Gripper pose   | $( X^G )$  | $( \mathbb{R}^6 )$ or $( SE(3) )$ | Position + Orientation in space     |
+
 
 ### MultibodyPlant Structure:
 
