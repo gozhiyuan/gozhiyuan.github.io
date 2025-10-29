@@ -2,7 +2,7 @@
 layout: post
 title: LLM Training Parallelism Basics
 subtitle: Language Modeling from Scratch Lecture 7
-categories: Large-Language-Model
+categories: Large-Language-Model Distributed-Training
 tags: [Stanford-LLM-From-Scratch-2025]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
