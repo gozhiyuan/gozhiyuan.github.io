@@ -2,7 +2,7 @@
 layout: post
 title: Filtering and Deduplication Algorithms for LLM Data Processing
 subtitle: Language Modeling from Scratch Lecture 6
-categories: Large-Language-Model
+categories: Large-Language-Model Reinforcement-Learning
 tags: [Stanford-LLM-From-Scratch-2025]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
