@@ -28,9 +28,10 @@ The Actor–Critic framework introduces two interconnected approximations:
   - **Input:** current state $s$ (e.g., a screenshot of Super Mario).  
   - **Output:** probability distribution over the action set $A$.  
   - Uses **Softmax** activation to ensure probabilities sum to one:  
-    $$
-    \sum_{a \in A} \pi(a \mid s; \theta) = 1
-    $$
+   $$
+   \sum_{a \in \mathcal{A}} \pi(a \mid s; \theta) = 1
+   $$
+
 - **Example Output:**  
   - $\pi(\text{"left"} \mid s) = 0.2$  
   - $\pi(\text{"right"} \mid s) = 0.1$  
@@ -78,8 +79,9 @@ Each iteration consists of **two key update phases** — first the **Critic**, t
 3. **Sample Next Action (for TD target):**  
    - For learning only (not executed), sample a next action:  
      $$
-     a'_{t+1} \sim \pi(\cdot \mid s_{t+1}; \theta_t)
+     a_{t+1}' \sim \pi(\cdot \mid s_{t+1}; \theta_t)
      $$
+
 
 
 
@@ -156,8 +158,8 @@ This tight feedback loop allows **continuous learning during interaction** — f
 |-----------|----------------|--------------|--------------------|
 | 1 | Observe state $s_t$ | — | — |
 | 2 | Sample action $a_t \sim \pi(\cdot \mid s_t; \theta_t)$ | Actor | — |
-| 3 | Execute $a_t$, observe $s_{t+1}$, $r_t$ | Environment | — |
-| 4 | Sample $a'_{t+1} \sim \pi(\cdot \mid s_{t+1}; \theta_t)$ | Actor | — |
+| 3 | Execute $a_t$, observe $s_{t+1}$ and $r_t$ | Environment | — |
+| 4 | Sample next action $a_{t+1}' \sim \pi(\cdot \mid s_{t+1}; \theta_t)$ | Actor | — |
 | 5 | Compute TD error $\delta_t = r_t + \gamma q'_{t+1} - q_t$ | Critic | Supervised (TD) |
 | 6 | Update $w_{t+1} = w_t + \alpha_c \, \delta_t \, \nabla_w q(s_t, a_t; w_t)$ | Critic | Gradient Descent |
 | 7 | Compute $d_{\pi,t} = \frac{\partial}{\partial \theta} \log \pi(a_t \mid s_t; \theta_t)$ | Actor | Policy Gradient |
@@ -272,7 +274,7 @@ Over time, the Critic’s Q-value predictions become more accurate, stabilizing 
 The Actor and Critic interact mathematically through the **approximate state-value function**, defined as:
 
 $$
-V(s; \theta, w) = \sum_{a \in \mathcal{A}} \pi(a \mid s; \theta) \, q(s, a; w)
+V(s; \theta, w) = \sum_{a \in \mathcal{A}} \pi(a \mid s; \theta)\, q(s, a; w)
 $$
 
 - The **Actor** provides the action probabilities $\pi(a \mid s; \theta)$.  
@@ -312,7 +314,7 @@ In the basic Actor–Critic framework, the policy parameters $\theta$ are update
 1. **Compute policy gradient:**
 
    $$
-   d_{\pi, F} = \frac{\partial \log \pi(a_F | s_F; \theta)}{\partial \theta}
+   d_{\pi, F} = \frac{\partial \log \pi(a_F \mid s_F; \theta)}{\partial \theta}
    $$
 
 2. **Perform stochastic gradient ascent:**
@@ -338,7 +340,8 @@ $$
 Then the policy gradient becomes:
 
 $$
-\nabla_\theta J(\theta) = \mathbb{E}[\nabla_\theta \log \pi(a|s; \theta) \, (Q(s, a) - V(s))]
+\nabla_\theta J(\theta)
+= \mathbb{E}\!\left[\nabla_\theta \log \pi(a \mid s; \theta) \, (Q(s, a) - V(s))\right]
 $$
 
 
@@ -362,8 +365,8 @@ $$
 \delta_A \approx r_F + \gamma V(s_{F+1}) - V(s_F)
 $$
 
-This update means:
-- If the observed return is **better than expected** ($\delta_A > 0$), increase the probability of taking that action.
+This update means:  
+- If the observed return is **better than expected** ($\delta_A > 0$), increase the probability of taking that action.  
 - If it’s **worse than expected** ($\delta_A < 0$), decrease it.
 
 
@@ -372,7 +375,7 @@ This update means:
 Subtracting the baseline does **not bias** the gradient because the expectation of the baseline term is zero:
 
 $$
-\mathbb{E}[\nabla_\theta \log \pi(a|s; \theta) \, b(s)] = 0
+\mathbb{E}\!\left[\nabla_\theta \log \pi(a \mid s; \theta) \, b(s)\right] = 0
 $$
 
 This ensures that:
@@ -390,37 +393,38 @@ In general, **you don’t need both** — it depends on whether your Critic lear
 #### ✅ 1️⃣ **V-Critic (A2C / A3C / PPO style)** — **Yes**, you need a **Value Network** $V(s)$
 
 In this setup:
-- The **Critic** learns $V(s; w_V)$ — the expected return from a given state.
-- The **Actor** learns $\pi(a|s; \theta)$ — how to choose actions.
-- The **Advantage** is computed as:
+- The **Critic** learns $V(s; w_V)$ — the expected return from a given state.  
+- The **Actor** learns $\pi(a \mid s; \theta)$ — how to choose actions.  
+- The **Advantage** is computed as:  
   $$
-  A(s,a) = r_t + \gamma V(s_{t+1}) - V(s_t)
+  A(s, a) = r_t + \gamma V(s_{t+1}) - V(s_t)
   $$
 - You **do not need** a Q-network here — the value network provides the *baseline*.
 
 So the system has:
-- One **Actor Network** (policy)
+- One **Actor Network** (policy)  
 - One **Critic Network** (value function $V$)
 
-#### ✅ 2️⃣ **Q-Critic (SARSA / Classic AC style)** — **No**, you only need a **Q Network** $Q(s,a)$
+#### ✅ 2️⃣ **Q-Critic (SARSA / Classic AC style)** — **No**, you only need a **Q Network** $Q(s, a)$
 
 In this setup:
-- The **Critic** learns $Q(s,a; w_Q)$ — the expected return for each state–action pair.
-- The **Actor** uses the Q-values directly for updates:
+- The **Critic** learns $Q(s, a; w_Q)$ — the expected return for each state–action pair.  
+- The **Actor** uses the Q-values directly for updates:  
   $$
-  \theta \leftarrow \theta + \alpha_a \, Q(s_t, a_t) \, \nabla_\theta \log \pi(a_t|s_t; \theta)
+  \theta \leftarrow \theta + \alpha_a \, Q(s_t, a_t) \, \nabla_\theta \log \pi(a_t \mid s_t; \theta)
   $$
 - There’s **no explicit baseline**, but this approach typically has higher variance.
 
 #### 💡 3️⃣ **Hybrid or Advanced Versions**
 
 Some modern algorithms (like **DDPG**, **SAC**) include **both**:
-- A **Q-network** to learn action-specific value.
-- A **V-network** (or soft value) to stabilize learning, e.g.:
+- A **Q-network** to learn action-specific values.  
+- A **V-network** (or *soft value*) to stabilize learning, e.g.:
   $$
-  V(s) = \mathbb{E}_{a \sim \pi} [ Q(s,a) - \alpha \log \pi(a|s) ]
+  V(s) = \mathbb{E}_{a \sim \pi} \!\left[ Q(s, a) - \alpha \log \pi(a \mid s) \right]
   $$
-This is used in **continuous action** RL.
+This formulation is commonly used in **continuous-action** reinforcement learning.
+
 
 #### 🧭 Summary
 
@@ -445,14 +449,14 @@ The idea: instead of estimating $Q(s, a)$ for every action, the Critic learns ho
 
 - **Critic’s role:**
   $$
-  \text{TD Target: } y_t = r_t + \gamma V(s_{t+1}; w)
+  \text{TD Target: } \quad y_t = r_t + \gamma V(s_{t+1}; w)
   $$
   $$
-  \text{TD Error: } \delta_t = y_t - V(s_t; w)
+  \text{TD Error: } \quad \delta_t = y_t - V(s_t; w)
   $$
    - **Input:** A state $s_t$  
-   - **Output:** A scalar $V(s_t)$ — the expected *future return* from that state under current policy $\pi$
-      - **Training Target (TD target):**
+   - **Output:** A scalar $V(s_t)$ — the expected *future return* from that state under current policy $\pi$  
+   - **Training Target (TD target):**
    $$
    y_t = r_t + \gamma V(s_{t+1}; w)
    $$
@@ -467,29 +471,28 @@ The idea: instead of estimating $Q(s, a)$ for every action, the Critic learns ho
 
 - **Actor’s update rule:**
   $$
-  \theta \leftarrow \theta + \alpha_a \, \delta_t \, \nabla_\theta \log \pi(a_t | s_t; \theta)
+  \theta \leftarrow \theta + \alpha_a \, \delta_t \, \nabla_\theta \log \pi(a_t \mid s_t; \theta)
   $$
 
 Here, the TD error $\delta_t$ acts as an **advantage estimate**, measuring how much better or worse the chosen action performed compared to expectation.
 
 
 **Interpretation:**  
-- Here the Critic doesn’t evaluate individual actions, just the overall quality of a state.  
+- The Critic doesn’t evaluate individual actions, only the overall quality of a state.  
 - To train it, you **sample states** from trajectories generated by the current policy $\pi$.  
-- Then you compare what the Critic *predicted* ($V(s_t)$) versus what *actually happened* ($r_t + \gamma V(s_{t+1})$).
+- Then compare what the Critic *predicted* ($V(s_t)$) versus what *actually happened* ($r_t + \gamma V(s_{t+1})$).
 
 ✅ Works well for **continuous actions**  
-✅ Enables **Advantage-based** learning (lower variance)
-❌ Doesn’t tell you directly which action is best — relies on the Actor to explore and learn from $\delta_t$ feedback.
+✅ Enables **advantage-based** learning (lower variance)  
+❌ Doesn’t directly tell which action is best — relies on the Actor to explore and learn from $\delta_t$ feedback.
 
 ✅ **Used in:**  
 A2C (Advantage Actor–Critic), A3C (Asynchronous A2C), PPO, etc.  
 These methods are efficient and stable because they use **state-based feedback** rather than raw returns.
 
-
 🧠 **Intuition:**
-- The V-critic gives a **baseline expectation** for the state’s value.
-- The Actor learns to adjust the policy based on how much better or worse an action performed *relative to this baseline*.
+- The V-Critic provides a **baseline expectation** for the state’s value.  
+- The Actor adjusts its policy based on how much better or worse an action performed *relative to this baseline*.
 
 ### Q-Critic (SARSA-Style Actor–Critic)
 
@@ -497,14 +500,14 @@ In **Q-Critic** methods, the Critic directly approximates the **action-value fun
 
 - **Critic’s role:**
   $$
-  \text{TD Target: } y_t = r_t + \gamma Q(s_{t+1}, a_{t+1}; w)
+  \text{TD Target: } \quad y_t = r_t + \gamma Q(s_{t+1}, a_{t+1}; w)
   $$
   $$
-  \text{TD Error: } \delta_t = y_t - Q(s_t, a_t; w)
+  \text{TD Error: } \quad \delta_t = y_t - Q(s_t, a_t; w)
   $$
 
    - **Input:** A state $s_t$ and an action $a_t$  
-   - **Output:** A scalar $Q(s_t, a_t)$ — the expected *future return* from doing $a_t$ in $s_t$
+   - **Output:** A scalar $Q(s_t, a_t)$ — the expected *future return* from taking $a_t$ in $s_t$  
    - **Training Target (TD target):**
    $$
    y_t = r_t + \gamma \max_{a'} Q(s_{t+1}, a'; w)
@@ -517,12 +520,14 @@ In **Q-Critic** methods, the Critic directly approximates the **action-value fun
    $$
    w \leftarrow w + \alpha_c \, \delta_t \, \nabla_w Q(s_t, a_t; w)
    $$
+
 - **Actor’s update rule:**
   $$
-  \theta \leftarrow \theta + \alpha_a \, \delta_t \, \nabla_\theta \log \pi(a_t | s_t; \theta)
+  \theta \leftarrow \theta + \alpha_a \, \delta_t \, \nabla_\theta \log \pi(a_t \mid s_t; \theta)
   $$
 
-This version resembles **SARSA** because it uses the *actual next action* $a_{t+1}$ (sampled from the policy) in its TD target rather than the maximum Q-value over all actions.
+This approach resembles **SARSA**, since it uses the *actual next action* $a_{t+1}$ (sampled from the policy) in its TD target rather than the maximum Q-value over all actions.
+
 
 ✅ **Used in:**  
 Classical Actor–Critic formulations and SARSA-based policy gradient hybrids. 
