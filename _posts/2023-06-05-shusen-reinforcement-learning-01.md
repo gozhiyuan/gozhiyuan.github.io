@@ -85,13 +85,14 @@ Key components of the RL framework:
 RL involves continuous loops of interaction, with two key randomness sources:
 
 ### 🎲 Two Sources of Randomness
-1. **Actions:** $( A \sim \pi(\cdot|s) )$ — from the agent’s policy.  
-2. **States:** $( S' \sim p(\cdot|s,a) )$ — from the environment.
+1. **Actions:** $A \sim \pi(\cdot \mid s)$ — from the agent’s policy.  
+2. **States:** $S' \sim p(\cdot \mid s, a)$ — from the environment.
 
 ### 🧩 The RL Interaction Loop
-1. Agent observes state $( s_t )$.  
-2. Chooses action $( a_t \sim \pi(\cdot|s_t) )$.  
-3. Executes $( a_t )$, receives new state $( s_{t+1} )$ and reward $( r_t )$.
+1. Agent observes state $s_t$.  
+2. Chooses action $a_t \sim \pi(\cdot \mid s_t)$.  
+3. Executes $a_t$, receives new state $s_{t+1}$ and reward $r_t$.
+
 
 ### 🧵 Trajectory / Episode
 A full trajectory:  
@@ -157,9 +158,9 @@ When computing $( Q_\pi(s_t, a_t) )$:
 
 1. The **initial state** $( s_t )$ and **action** $( a_t )$ are **known (observed)**.  
 2. All **future states** $( S_{t+1}, \dots, S_H )$ and **future actions** $( A_{t+1}, \dots, A_H )$ are **random variables**.  
-3. The expectation $( E[\cdot] )$ averages over this randomness, determined by:
-   - The **policy** $( \pi )$, governing actions: $( A_{t+1} \sim \pi(\cdot | S_{t+1}) )$
-   - The **environment transition** $( p )$, governing states: $( S_{t+1} \sim p(\cdot | s_t, a_t) )$
+3. The expectation $E[\cdot]$ averages over this randomness, determined by:  
+   - The **policy** $\pi$, governing actions: $A_{t+1} \sim \pi(\cdot \mid S_{t+1})$  
+   - The **environment transition** $p$, governing states: $S_{t+1} \sim p(\cdot \mid s_t, a_t)$
 4. Therefore, $( Q_\pi(s_t, a_t) )$ depends on:
    - The **current state** $( s_t )$
    - The **current action** $( a_t )$
@@ -294,7 +295,7 @@ Randomness is introduced in two main areas: the **Policy** (agent’s action sel
 The **policy (π)** defines the agent’s behavior — how it chooses an action given a state. Policies can be **stochastic** or **deterministic**.
 
 #### • Random (Stochastic) Policy
-- The policy $( \pi(a|s) )$ represents the **probability** of taking action $( A=a )$ given the current state $( S=s )$.  
+- The policy $\pi(a \mid s)$ represents the **probability** of taking action $A = a$ given the current state $S = s$.
 - Upon observing $( S=s )$, the agent’s action $( A )$ is **random**, drawn from the policy distribution:  
   $( A \sim \pi(\cdot|s) )$.
 - **Example:**  
@@ -331,9 +332,9 @@ The **environment’s response** to an agent’s action can also be random or de
 Because **both** the agent’s policy $( \pi )$ and the environment’s transition function $( p )$ can be random, the entire **trajectory** of future states and rewards is inherently **stochastic**.
 
 - The **return** $( U_t )$ (sum of future discounted rewards) is a **random variable** at time $( t )$.  
-- Each future reward $( R_n )$ is random because it depends on:
-  - $( A_n )$, drawn from the **policy** $( \pi(\cdot|S_n) )$, and  
-  - $( S_n )$, drawn from the **transition function** $( p(\cdot|S_{n-1}, A_{n-1}) )$.
+- Each future reward $R_n$ is random because it depends on:  
+  - $A_n$, drawn from the **policy** $\pi(\cdot \mid S_n)$, and  
+  - $S_n$, drawn from the **transition function** $p(\cdot \mid S_{n-1}, A_{n-1})$.
 
 Thus, the **Action-Value Function** $( Q_\pi(s,a) )$ and the **State-Value Function** $( V_\pi(s) )$ are defined as **expectations** — they compute the **expected discounted return**, averaging over all possible random trajectories under policy $( \pi )$.
 
@@ -393,12 +394,12 @@ These terms define the **agent**, the **environment**, and how they **interact**
 
 | **Terminology** | **Notation** | **Definition** |
 |------------------|--------------|----------------|
-| **State** | $( s )$ | Represents the **current situation** or frame of the environment. |
-| **Action** | $( a )$ | A **choice** the agent can make, e.g. `{left, right, up}`. The full set of possible actions is denoted $( A )$. |
-| **Reward** | $( R )$ or $( r )$ | **Numerical feedback** from the environment. Example: +1 for collecting a coin, −10000 for hitting a Goomba, 0 when nothing happens. Rewards guide policy learning. |
-| **Policy** | $( \pi )$ | The **agent’s behavioral rule**, defining the probability of taking an action given a state: $( \pi(a|s) = P(A=a|S=s) )$. |
-| **State Transition** | $( p(s'|s, a) )$ | The **probability distribution** describing how the environment moves from one state $( s )$ to the next $( s' )$ after taking action $( a )$. |
-| **Trajectory** | $( (s_0, a_0, r_0, …) )$ | The **sequence of interactions** between the agent and environment: $( s_0, a_0, r_0, s_1, a_1, r_1, …, s_H, a_H, r_H )$. |
+| **State** | $s$ | Represents the **current situation** or frame of the environment. |
+| **Action** | $a$ | A **choice** the agent can make, e.g. `{left, right, up}`. The full set of possible actions is denoted $A$. |
+| **Reward** | $R$ or $r$ | **Numerical feedback** from the environment. Example: +1 for collecting a coin, −10000 for hitting a Goomba, 0 when nothing happens. Rewards guide policy learning. |
+| **Policy** | $\pi$ | The **agent’s behavioral rule**, defining the probability of taking an action given a state: $\pi(a \mid s) = P(A = a \mid S = s)$. |
+| **State Transition** | $p(s' \mid s, a)$ | The **probability distribution** describing how the environment moves from one state $s$ to the next $s'$ after taking action $a$. |
+| **Trajectory** | $(s_0, a_0, r_0, \ldots)$ | The **sequence of interactions** between the agent and environment: $(s_0, a_0, r_0, s_1, a_1, r_1, \ldots, s_H, a_H, r_H)$. |
 | **Episode** | N/A | One **complete run** from start to end (e.g., a game of Mario — from start until win or loss). |
 
 
@@ -408,12 +409,12 @@ These terms describe how reinforcement learning **quantifies long-term performan
 
 | **Terminology** | **Notation** | **Definition** |
 |------------------|--------------|----------------|
-| **Return** | $( U_t )$ | The **cumulative future reward** received from time $( t )$ onward. |
-| **Discount Factor** | $( \gamma )$ | A **tuning parameter** (0 ≤ γ ≤ 1) that reduces the weight of future rewards, modeling time preference. |
-| **Discounted Return** | $( U_t )$ | The **cumulative discounted future reward**:<br> $( U_t = R_t + \gamma R_{t+1} + \gamma^2 R_{t+2} + … + \gamma^{H-t} R_H )$. <br> Since rewards are random, $( U_t )$ is also a **random variable**. |
-| **Observed Discounted Return** | $( u_t )$ | The **realized value** of the discounted return computed from observed rewards $( r_t, r_{t+1}, … )$. |
-| **Action-Value Function** | $( Q_\pi(s, a) )$ | The **expected discounted return** given the agent is in state $( s $) and takes action $( a )$, assuming it continues following policy $( \pi )$. Measures *“how good it is to take action a in state s.”* |
-| **State-Value Function** | $( V_\pi(s) )$ | The **expected value** of being in state $( s )$, computed as the expectation of $( Q_\pi(s, A) )$ where $( A \sim \pi(\cdot | s) \):<br> \( V_\pi(s) = E_A[Q_\pi(s, A)] )$. |
+| **Return** | $U_t$ | The **cumulative future reward** received from time $t$ onward. |
+| **Discount Factor** | $\gamma$ | A **tuning parameter** ($0 \le \gamma \le 1$) that reduces the weight of future rewards, modeling time preference. |
+| **Discounted Return** | $U_t$ | The **cumulative discounted future reward**:<br> $U_t = R_t + \gamma R_{t+1} + \gamma^2 R_{t+2} + \ldots + \gamma^{H-t} R_H$. <br> Since rewards are random, $U_t$ is also a **random variable**. |
+| **Observed Discounted Return** | $u_t$ | The **realized value** of the discounted return computed from observed rewards $r_t, r_{t+1}, \ldots$. |
+| **Action-Value Function** | $Q_\pi(s, a)$ | The **expected discounted return** given the agent is in state $s$ and takes action $a$, assuming it continues following policy $\pi$. Measures *“how good it is to take action a in state s.”* |
+| **State-Value Function** | $V_\pi(s)$ | The **expected value** of being in state $s$, computed as the expectation of $Q_\pi(s, A)$ where $A \sim \pi(\cdot \mid s)$:<br> $V_\pi(s) = E_A[Q_\pi(s, A)]$. |
 
 
 ### 🧠 Summary
