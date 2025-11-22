@@ -24,16 +24,14 @@ This blog explores the **structure and training process** of **AlphaGo** and its
 
 - **Action Space:**  
   Each move corresponds to placing a stone on an empty intersection.  
-  $$
-  \mathcal{A} = \{1, 2, 3, \dots, 361\}
-  $$  
+$$
+\mathcal{A} = \{1, 2, 3, \dots, 361\}
+$$  
   The “pass” move is also a valid action.
 
 - **Complexity:**  
-  The number of possible Go game sequences is on the order of  
-  $$
-  10^{170}
-  $$  
+  The number of possible Go game sequences is on the order of $10^{170}$
+ 
   — vastly greater than Chess ($\sim 10^{47}$), making brute-force search infeasible.
 
 
@@ -74,9 +72,9 @@ During play, **Monte Carlo Tree Search (MCTS)** combines the policy and value ne
 - **Policy Network Output:**  
   $\pi(a \mid s; \theta)$  
   Outputs a probability distribution over all legal actions via **Softmax**:  
-  $$
-  \sum_{a \in \mathcal{A}} \pi(a \mid s; \theta) = 1
-  $$
+$$
+\sum_{a \in \mathcal{A}} \pi(a \mid s; \theta) = 1
+$$
 
 - **Value Network Output:**  
   $v(s; w) \in [-1, 1]$  
@@ -95,9 +93,9 @@ During play, **Monte Carlo Tree Search (MCTS)** combines the policy and value ne
 2. Predict action distribution $p_t = \pi(\cdot \mid s_t; \theta)$.  
 3. True label $y_t$ = one-hot vector of human move $a_t^\ast$.  
 4. Minimize **Cross-Entropy Loss**:  
-   $$
-   L = -\sum_{a \in \mathcal{A}} y_t(a) \, \log p_t(a)
-   $$
+$$
+L = -\sum_{a \in \mathcal{A}} y_t(a) \, \log p_t(a)
+$$
 
 - **Limitation:**  
   When the model encounters unseen states, it performs poorly — hence the need for **self-play reinforcement learning** to generalize beyond human data.
@@ -114,33 +112,31 @@ After imitation learning, the agent improves via **self-play** using the policy 
   Only the Player’s parameters are updated.
 
 - **Reward:**  
-  $$
-  r_T =
-  \begin{cases}
-  +1, & \text{if win} \\
-  -1, & \text{if lose}
-  \end{cases}
-  $$  
+$$
+r_T =
+\begin{cases}
++1, & \text{if win} \\
+-1, & \text{if lose}
+\end{cases}
+$$  
   Intermediate rewards are $0$.
 
 - **Return:**  
-  Since Go’s outcome is binary, every state in a game has the same return:  
-  $$
-  U_t = r_T
-  $$
+  Since Go’s outcome is binary, every state in a game has the same return: $U_t = r_T$
+
 
 - **Policy Gradient Objective:**  
-  $$
-  \nabla_\theta J(\theta)
-  = \mathbb{E}_t \!\left[
-  \nabla_\theta \log \pi(a_t \mid s_t; \theta) \, U_t
-  \right]
-  $$
+$$
+\nabla_\theta J(\theta)
+= \mathbb{E}_t \!\left[
+\nabla_\theta \log \pi(a_t \mid s_t; \theta) \, U_t
+\right]
+$$
 
 - **Parameter Update:**  
-  $$
-  \theta \leftarrow \theta + \beta \, \nabla_\theta J(\theta)
-  $$
+$$
+\theta \leftarrow \theta + \beta \, \nabla_\theta J(\theta)
+$$
 
 ## 📈 6. Training Step 3 — Value Network Training
 
@@ -212,13 +208,8 @@ After many simulations, choose the move $a_t$ with the **highest visit count** $
 ![alt_text](/assets/images/shusen-rl/05/7.png "image_tooltip")
 
 - Removes human data — learns purely from **self-play**.  
-- Uses **MCTS visit counts** as the target distribution for training the policy:  
-  $$
-  L = \text{CrossEntropy}(n, p)
-  $$  
+- Uses **MCTS visit counts** as the target distribution for training the policy: $L = \text{CrossEntropy}(n, p)$  
   where $n$ = normalized visit counts from MCTS.
-
----
 
 ### 🌍 AlphaZero
 ![alt_text](/assets/images/shusen-rl/05/8.png "image_tooltip")
@@ -226,17 +217,17 @@ After many simulations, choose the move $a_t$ with the **highest visit count** $
 A general version capable of mastering **Go, Chess, and Shogi** from scratch.
 
 - **Unified Network:**  
-  $$
-  f_\theta(s) = (p, v)
-  $$  
+$$
+f_\theta(s) = (p, v)
+$$  
   where:  
   - $p$ — policy probabilities over actions  
   - $v$ — expected game outcome
 
 - **Training Loss:**  
-  $$
-  l = (z - v)^2 - \pi^{\top} \log p + c \, \lVert \theta \rVert^2
-  $$  
+$$
+l = (z - v)^2 - \pi^{\top} \log p + c \, \lVert \theta \rVert^2
+$$  
   where:  
   - $z$ — actual game outcome ($+1$ / $-1$)  
   - $\pi$ — search probabilities from MCTS  
