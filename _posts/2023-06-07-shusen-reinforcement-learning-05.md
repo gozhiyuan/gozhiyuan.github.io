@@ -25,7 +25,7 @@ This blog explores the **structure and training process** of **AlphaGo** and its
 - **Action Space:**  
   Each move corresponds to placing a stone on an empty intersection.  
   $$
-  A = \{1, 2, 3, \dots, 361\}
+  \mathcal{A} = \{1, 2, 3, \dots, 361\}
   $$  
   The “pass” move is also a valid action.
 
@@ -35,6 +35,7 @@ This blog explores the **structure and training process** of **AlphaGo** and its
   10^{170}
   $$  
   — vastly greater than Chess ($\sim 10^{47}$), making brute-force search infeasible.
+
 
   | **Game**        | **State-Space Complexity** | **Game-Tree Complexity** | 
   |------------------|----------------------------|---------------------------
@@ -72,9 +73,9 @@ During play, **Monte Carlo Tree Search (MCTS)** combines the policy and value ne
 
 - **Policy Network Output:**  
   $\pi(a \mid s; \theta)$  
-  Outputs a probability distribution over all legal actions via **Softmax**:
+  Outputs a probability distribution over all legal actions via **Softmax**:  
   $$
-  \sum_{a \in A} \pi(a \mid s; \theta) = 1
+  \sum_{a \in \mathcal{A}} \pi(a \mid s; \theta) = 1
   $$
 
 - **Value Network Output:**  
@@ -93,9 +94,9 @@ During play, **Monte Carlo Tree Search (MCTS)** combines the policy and value ne
 1. Observe a state $s_t$ from human games.  
 2. Predict action distribution $p_t = \pi(\cdot \mid s_t; \theta)$.  
 3. True label $y_t$ = one-hot vector of human move $a_t^\ast$.  
-4. Minimize **Cross-Entropy Loss**:
+4. Minimize **Cross-Entropy Loss**:  
    $$
-   L = - \sum_a y_t(a) \log p_t(a)
+   L = -\sum_{a \in \mathcal{A}} y_t(a) \, \log p_t(a)
    $$
 
 - **Limitation:**  
@@ -120,10 +121,10 @@ After imitation learning, the agent improves via **self-play** using the policy 
   -1, & \text{if lose}
   \end{cases}
   $$  
-  Intermediate rewards are 0.
+  Intermediate rewards are $0$.
 
 - **Return:**  
-  Since Go’s outcome is binary, every state in a game has the same return:
+  Since Go’s outcome is binary, every state in a game has the same return:  
   $$
   U_t = r_T
   $$
@@ -141,16 +142,16 @@ After imitation learning, the agent improves via **self-play** using the policy 
   \theta \leftarrow \theta + \beta \, \nabla_\theta J(\theta)
   $$
 
-
 ## 📈 6. Training Step 3 — Value Network Training
 
 ![alt_text](/assets/images/shusen-rl/05/5.png "image_tooltip")
 
 - **Goal:** Learn $v(s; w) \approx V^\pi(s) = \mathbb{E}[U_t \mid S_t = s]$.  
 - **Loss Function:**
-  $$
-  L(w) = \sum_{t=0}^{T} \big(v(s_t; w) - U_t\big)^2
-  $$
+$$
+L(w) = \sum_{t=0}^{T} \!\big( v(s_t; w) - U_t \big)^2
+$$
+
 - **Optimization:**  
   Use gradient descent to minimize mean squared error between predicted and actual returns.  
   This transforms the value network into a learned evaluator of board positions.
@@ -164,25 +165,36 @@ At runtime, AlphaGo uses **MCTS** to plan moves.
 
 Each simulation repeats four stages:
 
+---
+
 ### 1️⃣ Selection
-Choose action $a$ with highest **PUCT score**:
+Choose action $a$ with the highest **PUCT score**:
 $$
 \text{score}(a) = Q(a) + \eta \cdot \frac{\pi(a \mid s; \theta)}{1 + N(a)}
 $$
 - $Q(a)$ — mean value from previous rollouts  
 - $N(a)$ — visit count  
-- $\pi(a \mid s; \theta)$ — prior probability from policy network
+- $\pi(a \mid s; \theta)$ — prior probability from the policy network
+
+---
 
 ### 2️⃣ Expansion
-Expand the tree by sampling the opponent’s response  
-$a_t' \sim \pi(\cdot \mid s_t'; \theta)$ to form next state $s_{t+1}$.
+Expand the tree by sampling the opponent’s response:  
+$$
+a_t' \sim \pi(\cdot \mid s_t'; \theta)
+$$
+to form the next state $s_{t+1}$.
+
+---
 
 ### 3️⃣ Evaluation
 Estimate the value of $s_{t+1}$ using:
 $$
-V(s_{t+1}) = \tfrac{1}{2} v(s_{t+1}; w) + \tfrac{1}{2} r_T
+V(s_{t+1}) = \tfrac{1}{2} \, v(s_{t+1}; w) + \tfrac{1}{2} \, r_T
 $$
-— averaging the network’s value and a rollout result.
+— averaging the network’s predicted value and the rollout result.
+
+---
 
 ### 4️⃣ Backup
 Propagate $V(s_{t+1})$ back up the tree to update:
@@ -200,32 +212,36 @@ After many simulations, choose the move $a_t$ with the **highest visit count** $
 ![alt_text](/assets/images/shusen-rl/05/7.png "image_tooltip")
 
 - Removes human data — learns purely from **self-play**.  
-- Uses **MCTS visit counts** as the target distribution for training the policy:
+- Uses **MCTS visit counts** as the target distribution for training the policy:  
   $$
   L = \text{CrossEntropy}(n, p)
   $$  
   where $n$ = normalized visit counts from MCTS.
 
+---
+
 ### 🌍 AlphaZero
 ![alt_text](/assets/images/shusen-rl/05/8.png "image_tooltip")
+
 A general version capable of mastering **Go, Chess, and Shogi** from scratch.
 
-- **Unified Network:**
+- **Unified Network:**  
   $$
   f_\theta(s) = (p, v)
-  $$
-  where  
-  - $p$: policy probabilities over actions  
-  - $v$: expected game outcome
+  $$  
+  where:  
+  - $p$ — policy probabilities over actions  
+  - $v$ — expected game outcome
 
-- **Training Loss:**
+- **Training Loss:**  
   $$
-  l = (z - v)^2 - \pi^\top \log p + c \, \|\theta\|^2
-  $$
-  where  
-  - $z$ = actual game outcome (+1 / −1)  
-  - $\pi$ = search probabilities from MCTS  
-  - $c$ = regularization coefficient
+  l = (z - v)^2 - \pi^{\top} \log p + c \, \lVert \theta \rVert^2
+  $$  
+  where:  
+  - $z$ — actual game outcome ($+1$ / $-1$)  
+  - $\pi$ — search probabilities from MCTS  
+  - $c$ — regularization coefficient
+
 
 - **Search Efficiency:**  
   AlphaZero evaluates ≈ 80 000 positions/sec in Chess (vs. Stockfish’s 70 million), demonstrating the power of **neural-guided selective search**.
