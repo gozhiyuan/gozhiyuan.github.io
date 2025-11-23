@@ -26,7 +26,7 @@ This blog explores the **structure and training process** of **AlphaGo** and its
   Each move corresponds to placing a stone on an empty intersection.  
 $$
 \mathcal{A} = \{1, 2, 3, \dots, 361\}
-$$  
+$$
   The “pass” move is also a valid action.
 
 - **Complexity:**  
@@ -118,7 +118,7 @@ r_T =
 +1, & \text{if win} \\
 -1, & \text{if lose}
 \end{cases}
-$$  
+$$
   Intermediate rewards are $0$.
 
 - **Return:**  
@@ -219,7 +219,7 @@ A general version capable of mastering **Go, Chess, and Shogi** from scratch.
 - **Unified Network:**  
 $$
 f_\theta(s) = (p, v)
-$$  
+$$
   where:  
   - $p$ — policy probabilities over actions  
   - $v$ — expected game outcome
@@ -227,7 +227,7 @@ $$
 - **Training Loss:**  
 $$
 l = (z - v)^2 - \pi^{\top} \log p + c \, \lVert \theta \rVert^2
-$$  
+$$
   where:  
   - $z$ — actual game outcome ($+1$ / $-1$)  
   - $\pi$ — search probabilities from MCTS  

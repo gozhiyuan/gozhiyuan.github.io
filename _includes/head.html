@@ -23,15 +23,17 @@
   <!-- KaTeX auto-render setup -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      function waitForKaTeXRender() {
-        if (typeof renderMathInElement === "function") {
-          renderMathInElement(document.body, {
-            delimiters: [
-              { left: "$$", right: "$$", display: true },
-              { left: "$", right: "$", display: false }
-            ],
-            throwOnError: false
-          });
+          function waitForKaTeXRender() {
+            if (typeof renderMathInElement === "function") {
+              renderMathInElement(document.body, {
+                delimiters: [
+                  { left: "$$", right: "$$", display: true },
+                  { left: "$", right: "$", display: false },
+                  { left: "\\(", right: "\\)", display: false },
+                  { left: "\\[", right: "\\]", display: true }
+                ],
+                throwOnError: false
+              });
         } else {
           setTimeout(waitForKaTeXRender, 50);
         }

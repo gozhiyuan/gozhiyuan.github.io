@@ -338,9 +338,10 @@ During training:
 ### Prioritized Replay
 
 Not all experiences are equally useful.  
-**Prioritized Experience Replay** samples transitions based on their **TD error magnitude**:
+**Prioritized Experience Replay** samples transitions based on their **TD error magnitude**.  
+Using priority weights $P_i$ for each experience $i$:
 $$
-P(i) = \frac{|\delta_i|^\alpha}{\sum_k |\delta_k|^\alpha}
+P_i = \frac{|\delta_i|^\alpha}{\sum_k |\delta_k|^\alpha}
 $$
 Larger errors → more surprising transitions → more frequent updates.
 
@@ -376,7 +377,7 @@ Let’s break down this important distinction between **DQN**, **Value Function*
 So:
 - $V(s)$ → evaluates **states**.
 - $Q(s,a)$ → evaluates **state–action pairs**.
-- $\pi(a|s)$ → directly defines the **action probabilities**.
+- $\pi(a \mid s)$ → directly defines the **action probabilities**.
 
 ### Why DQN Learns $Q^*(s,a)$, Not $V(s)$
 
@@ -386,18 +387,19 @@ Q^*(s,a) = \mathbb{E} \big[ r_t + \gamma \max_{a'} Q^*(s',a') \mid s,a \big]
 $$
 
 - The $\max_{a'}$ term ensures the function encodes the **best possible future actions**.
-- $Q^*(s,a)$ directly represents *“the total future reward if I take this action now and then act optimally.”*
+- $Q^*(s,a)$ directly represents _“the total future reward if I take this action now and then act optimally.”_
 
 Hence, if you know $Q^*(s,a)$, you can **derive both the value function and the optimal policy**:
 
 $$
-V^*(s) = \max_a Q^*(s,a)
+V^*(s) = \max_{a} Q^*(s,a)
 $$
+
 $$
-\pi^*(a|s) = 
+\pi^*(a \mid s) =
 \begin{cases}
-1 & \text{if } a = \arg\max_a Q^*(s,a) \\
-0 & \text{otherwise}
+1, & \text{if } a = \arg\max_{a'} Q^*(s,a') \\
+0, & \text{otherwise}
 \end{cases}
 $$
 
@@ -512,6 +514,4 @@ But they differ fundamentally in *what they learn and how they update*:
 
 So although both methods choose actions that *maximize expected return*,  
 - **DQN** does so **indirectly** (via $\max_a Q$).  
-- **Policy-based RL** does so **directly** (via parameterizing $\pi(a|s)$).
-
-
+- **Policy-based RL** does so **directly** (via parameterizing $\pi(a \mid s)$).
