@@ -215,32 +215,32 @@ For a fixed policy $( \pi )$:
 Both functions form the backbone of RL algorithms like **Q-learning**, **SARSA**, and **Actor–Critic**, which estimate and optimize these quantities to learn effective policies.
 
 
-### 🌟 The Optimal Action-Value Function $( Q^*(s, a) )$
+### 🌟 The Optimal Action-Value Function $( Q^\*(s, a) )$
 
-The **Optimal Action-Value Function**, denoted as $( Q^*(s, a) )$, represents the **best possible performance** an agent can achieve from any given state–action pair under an **optimal policy** $( \pi^* )$.
+The **Optimal Action-Value Function**, denoted as $( Q^\*(s, a) )$, represents the **best possible performance** an agent can achieve from any given state–action pair under an **optimal policy** $( \pi^\* )$.
 
 #### 🧩 Definition
 
-Formally, $( Q^*(s, a) )$ is defined as the **maximum expected discounted return** achievable by:
+Formally, $( Q^\*(s, a) )$ is defined as the **maximum expected discounted return** achievable by:
 1. Taking action $( a )$ in state $( s )$, and then  
-2. Following the **optimal policy** $( \pi^* )$ thereafter.
+2. Following the **optimal policy** $( \pi^\* )$ thereafter.
 
 $[
-Q^*(s, a) = \max_\pi \, Q_\pi(s, a)
+Q^\*(s, a) = \max_\pi \, Q_\pi(s, a)
 ]$
 
 In words:
-> $( Q^*(s, a) )$ tells us the **highest possible long-term return** (expected cumulative discounted reward) the agent can get if it behaves optimally after taking action $( a )$ in state $( s )$.
+> $( Q^\*(s, a) )$ tells us the **highest possible long-term return** (expected cumulative discounted reward) the agent can get if it behaves optimally after taking action $( a )$ in state $( s )$.
 
 #### 🔁 Relation to $( Q_\pi(s, a) )$
 
 - $( Q_\pi(s, a) )$: Expected return **under a specific policy** $( \pi )$.  
-- $( Q^*(s, a) )$: Expected return **under the best possible policy** $( \pi^* )$.
+- $( Q^\*(s, a) )$: Expected return **under the best possible policy** $( \pi^\* )$.
 
-Thus, $( Q^*(s, a) )$ is conceptually derived from all possible $( Q_\pi )$ functions by finding the **maximum** value across all policies.
+Thus, $( Q^\*(s, a) )$ is conceptually derived from all possible $( Q_\pi )$ functions by finding the **maximum** value across all policies.
 
 $[
-Q^*(s, a) = E[U_t \mid S_t = s, A_t = a, \pi = \pi^*]
+Q^\*(s, a) = E[U_t \mid S_t = s, A_t = a, \pi = \pi^\*]
 ]$
 
 Where the discounted return is:
@@ -250,22 +250,22 @@ U_t = R_t + \gamma R_{t+1} + \gamma^2 R_{t+2} + \dots
 
 #### ⚙️ Bellman Optimality Equation
 
-The optimal $( Q^* )$ function satisfies the **Bellman Optimality Equation**:
+The optimal $( Q^\* )$ function satisfies the **Bellman Optimality Equation**:
 
 $[
-Q^*(s, a) = E_{s'} \left[ R(s, a) + \gamma \max_{a'} Q^*(s', a') \right]
+Q^\*(s, a) = E_{s'} \left[ R(s, a) + \gamma \max_{a'} Q^\*(s', a') \right]
 ]$
 
 This recursive relation means:
-- The optimal value of $( Q^*(s, a) )$ equals the **immediate reward** plus the **discounted optimal future return**, assuming the agent always takes the best next action.
+- The optimal value of $( Q^\*(s, a) )$ equals the **immediate reward** plus the **discounted optimal future return**, assuming the agent always takes the best next action.
 
 
 #### 🚀 Intuition and Interpretation
 
-- $( Q^*(s, a) )$ provides a **ground truth measure of optimality** — what is the best you can do from here, if you act perfectly afterward.
-- Once $( Q^*(s, a) )$ is known, the **optimal policy** can be derived directly by always picking the action that maximizes $( Q^*(s, a) )$:
+- $( Q^\*(s, a) )$ provides a **ground truth measure of optimality** — what is the best you can do from here, if you act perfectly afterward.
+- Once $( Q^\*(s, a) )$ is known, the **optimal policy** can be derived directly by always picking the action that maximizes $( Q^\*(s, a) )$:
   $[
-  \pi^*(s) = \arg\max_a Q^*(s, a)
+  \pi^\*(s) = \arg\max_a Q^\*(s, a)
   ]$
 - This is the foundation of many RL algorithms such as:
   - **Q-learning**
@@ -278,11 +278,11 @@ This recursive relation means:
 | Concept | Definition | Meaning |
 |----------|-------------|----------|
 | $( Q_\pi(s, a) )$ | Expected discounted return following policy $( \pi )$ | “How good is it to take action *a* in state *s* under π?” |
-| $( Q^*(s, a) )$ | Maximum expected return across all possible policies | “What is the *best possible* return achievable from *(s, a)*?” |
-| $( \pi^*(s) )$ | Policy that maximizes $( Q^*(s, a) )$ for every state | “Always choose the best action according to $( Q^* )$.” |
+| $( Q^\*(s, a) )$ | Maximum expected return across all possible policies | “What is the *best possible* return achievable from *(s, a)*?” |
+| $( \pi^\*(s) )$ | Policy that maximizes $( Q^\*(s, a) )$ for every state | “Always choose the best action according to $( Q^\* )$.” |
 
 In short:  
-> **$( Q^*(s, a) )$** defines the gold standard of decision-making in RL — the best long-term outcome achievable through optimal behavior.
+> **$( Q^\*(s, a) )$** defines the gold standard of decision-making in RL — the best long-term outcome achievable through optimal behavior.
 
 
 ## 6. 🎲 Randomness vs. Determinism in Reinforcement Learning

@@ -167,7 +167,7 @@ Here’s a simple PyTorch implementation of a Mixture of Gaussians (MoG) policy 
 This implementation assumes:
 Input: observation vector (obs)
 Output: a mixture of Gaussians: multiple means, log variances (for numerical stability), and mixing weights
-The policy samples an action from the mixture
+The policy can sample an action from the mixture (useful at inference/rollout time), but **for behavioral cloning training** you should compute the likelihood of the **expert-labeled actions** under the mixture.
 """
 
 import torch
@@ -255,10 +255,15 @@ action_dim = 4
 policy = MoGPolicy(obs_dim, action_dim, num_components=5)
 
 obs = torch.randn(16, obs_dim)  # batch of observations
-action, comp_idx, mixture = policy(obs)
+
+# Inference / rollout: sample an action from the learned policy
+sampled_action, comp_idx, mixture = policy(obs)
+
+# Behavioral cloning training: maximize likelihood of expert actions under the mixture
+expert_action = torch.randn(16, action_dim)  # placeholder for dataset labels
 
 # For training loss:
-logp = policy.log_prob(obs, action)
+logp = policy.log_prob(obs, expert_action)
 loss = -logp.mean()  # maximize likelihood
 loss.backward()
 ```

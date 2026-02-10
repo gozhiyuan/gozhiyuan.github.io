@@ -28,14 +28,14 @@ Reinforcement Learning focuses on training policies to make decisions without ex
 - **Observation** ($o_t$): What the agent perceives. It is a stochastic function of the state and does not necessarily contain all information to infer the full state. It does not need to satisfy the Markov property.
 - **Action** ($a_t$): The output of the policy that influences the environment.
 - **Reward Function** ($R(s_t, a_t)$): A scalar-valued function that quantifies the desirability of states and actions. The objective in RL is not just immediate high rewards but rather to "take actions that will lead to higher awards later," considering future consequences.
-- **Transition Probability / Dynamics** ($P(s_{t+1}|s_t, a_t)$): Specifies the probability of moving to a new state $s_{t+1}$ given the current state $s_t$ and action $a_t$.
+- **Transition Probability / Dynamics** ($P(s_{t+1}\mid s_t, a_t)$): Specifies the probability of moving to a new state $s_{t+1}$ given the current state $s_t$ and action $a_t$.
 
 
 ## 2. Markov Decision Processes (MDPs) and Related Concepts
 
-- **Markov Chain**: A stochastic process with a set of states ($\mathcal{S}$) and a transition function ($\mathcal{T}$), where $\mathcal{T}$ denotes $P(s_{t+1}|s_t)$.
-- **Markov Decision Process (MDP)**: Augments a Markov chain by adding an action space ($\mathcal{A}$) and a reward function ($R$). Transitions now depend on both state and action: $P(s_{t+1}|s_t, a_t)$.
-- **Partially Observed Markov Decision Process (POMDP)**: Adds an observation space ($\mathcal{O}$) and emission probability ($P(o_t|s_t)$). Actions are selected based on observations.
+- **Markov Chain**: A stochastic process with a set of states ($\mathcal{S}$) and a transition function ($\mathcal{T}$), where $\mathcal{T}$ denotes $P(s_{t+1}\mid s_t)$.
+- **Markov Decision Process (MDP)**: Augments a Markov chain by adding an action space ($\mathcal{A}$) and a reward function ($R$). Transitions now depend on both state and action: $P(s_{t+1}\mid s_t, a_t)$.
+- **Partially Observed Markov Decision Process (POMDP)**: Adds an observation space ($\mathcal{O}$) and emission probability ($P(o_t\mid s_t)$). Actions are selected based on observations.
 
 
 ## 3. The Reinforcement Learning Objective
@@ -65,7 +65,7 @@ For a control problem that is "finite horizon," the decision-making task has a f
 📊 **Trajectory Distribution**  
 The joint probability distribution over trajectories, which depends on the policy ($\pi_\theta$), can be factorized using the chain rule of probability and by exploiting the Markov property.  
 This factorization defines the trajectory distribution as:  
-$p(s_1) \cdot \prod_{t=1}^T \pi_\theta(a_t|s_t) \cdot p(s_{t+1}|s_t, a_t)$
+$p(s_1) \cdot \prod_{t=1}^T \pi_\theta(a_t\mid s_t) \cdot p(s_{t+1}\mid s_t, a_t)$
 
 🧮 **Rewriting the Objective using Linearity of Expectation**  
 While the primary objective is:  
@@ -106,7 +106,7 @@ To handle this, two main strategies are used:
 
 🔁 Augmented Markov Chain  
 To analyze infinite horizon settings, the policy and environment can be modeled together as an augmented Markov chain, where the state-action pair $(s_t, a_t)$ becomes the new "augmented state".  
-The transition operator combines the environment dynamics $p(s_{t+1}|s_t, a_t)$ and the policy $\pi_\theta(a_{t+1}|s_{t+1})$.
+The transition operator combines the environment dynamics $p(s_{t+1}\mid s_t, a_t)$ and the policy $\pi_\theta(a_{t+1}\mid s_{t+1})$.
 
 📉 Stationary Distribution  
 We can now ask whether $p_\theta(s_t, a_t)$ converges to a **stationary distribution** $\mu$ as $t \to \infty$.
@@ -145,7 +145,7 @@ The RL objective for a finite horizon (fixed time steps $T$) is:
 $$ \mathbb{E}_{\tau \sim p_\theta(\tau)} \left[ \sum_{t=1}^T R(s_t, a_t) \right] $$  
 This expectation can be expanded using the chain rule:
 - Expectation over the initial state $p(s_1)$
-- Then over action $a_1$ using policy $\pi(a_1|s_1)$
+- Then over action $a_1$ using policy $\pi(a_1\mid s_1)$
 - Include reward $R(s_1, a_1)$
 - Nest additional expectations over future states/actions
 
@@ -155,7 +155,7 @@ Though it seems more complex, this expansion motivates the introduction of value
 
 ### Q-functions (Action-Value Functions)  
 
-🧠 *If I start in state* $( s_t $), *take action* $( a_t )$, *and then follow policy* $( \pi )$, *what is my total expected return from now on?*
+🧠 *If I start in state* $( s_t )$, *take action* $( a_t )$, *and then follow policy* $( \pi )$, *what is my total expected return from now on?*
 - ✅ The **immediate reward** from taking $( a_t )$ in $( s_t )$
 - ➕ The **expected future rewards** from following the policy after that
 
@@ -165,7 +165,7 @@ $$ Q^\pi(s_t, a_t) = \mathbb{E} \left[ \sum_{k=t}^T R(s_k, a_k) \middle| s_t, a_
 $Q^\pi(s_t, a_t)$ is the general definition: the expected return at any time $t$, given you follow policy $\pi$. $Q(s_1, a_1)$ is just a specific instance of the above at time step $t = 1$. So it's shorthand for:
 
 $$
-Q(s_1, a_1) = Q^\pi(s_1, a_1) = \mathbb{E}\left[ \sum_{k=1}^T R(s_k, a_k) \,\middle|\, s_1, a_1, \pi \right]
+Q(s_1, a_1) = Q^\pi(s_1, a_1) = \mathbb{E}\left[\sum_{k=1}^T R(s_k, a_k)\mid s_1, a_1, \pi\right]
 $$
 
 
@@ -181,7 +181,7 @@ It estimates the total expected reward when starting at $(s_t, a_t)$ and followi
 A value function $V^\pi(s_t)$ is:  
 $$ V^\pi(s_t) = \mathbb{E} \left[ \sum_{k=t}^T R(s_k, a_k) \middle| s_t, \pi \right] $$  
 Also,  
-$$ V^\pi(s_t) = \mathbb{E}_{a_t \sim \pi(a_t|s_t)} \left[ Q^\pi(s_t, a_t) \right] $$  
+$$ V^\pi(s_t) = \mathbb{E}_{a_t \sim \pi(a_t\mid s_t)} \left[ Q^\pi(s_t, a_t) \right] $$  
 And the total objective can be viewed as:  
 $$ \mathbb{E}_{s_1 \sim p(s_1)} \left[ V^\pi(s_1) \right] $$
 
@@ -198,9 +198,9 @@ $$ \mathbb{E}_{s_1 \sim p(s_1)} \left[ V^\pi(s_1) \right] $$
 $$
 \begin{aligned}
 \mathbb{E}_{\tau \sim p_\theta(\tau)} \left[ \sum_{t=1}^T R(s_t, a_t) \right]
-&= \mathbb{E}_{s_1 \sim p(s_1)} \left[ \mathbb{E}_{a_1 \sim \pi(a_1|s_1)} \left[ R(s_1, a_1) + \mathbb{E}_{s_2, a_2, \dots} \left[ \sum_{t=2}^T R(s_t, a_t) \right] \right] \right] \\
-&= \mathbb{E}_{s_1 \sim p(s_1)} \left[ \mathbb{E}_{a_1 \sim \pi(a_1|s_1)} \left[ Q(s_1, a_1) \right] \right] \\
-&= \mathbb{E}_{s_1 \sim p(s_1)} \left[ \mathbb{E}_{a_1 \sim \pi(a_1|s_1)} \left[ Q^\pi(s_1, a_1) \right] \right] \quad \text{(Explicitly denoting policy dependence)} \\
+&= \mathbb{E}_{s_1 \sim p(s_1)} \left[ \mathbb{E}_{a_1 \sim \pi(a_1\mid s_1)} \left[ R(s_1, a_1) + \mathbb{E}_{s_2, a_2, \dots} \left[ \sum_{t=2}^T R(s_t, a_t) \right] \right] \right] \\
+&= \mathbb{E}_{s_1 \sim p(s_1)} \left[ \mathbb{E}_{a_1 \sim \pi(a_1\mid s_1)} \left[ Q(s_1, a_1) \right] \right] \\
+&= \mathbb{E}_{s_1 \sim p(s_1)} \left[ \mathbb{E}_{a_1 \sim \pi(a_1\mid s_1)} \left[ Q^\pi(s_1, a_1) \right] \right] \quad \text{(Explicitly denoting policy dependence)} \\
 &= \mathbb{E}_{s_1 \sim p(s_1)} \left[ V^\pi(s_1) \right]
 \end{aligned}
 $$
@@ -209,7 +209,7 @@ $$
 
 🛠️ Policy Improvement using Q-functions  
 If $Q^\pi(s, a)$ is known, you can form a better policy $\pi'$ via:  
-$$ \pi'(a|s) = 
+$$ \pi'(a\mid s) = 
 \begin{cases}
 1 & \text{if } a = \arg\max_{a'} Q^\pi(s, a') \\
 0 & \text{otherwise}
@@ -232,7 +232,7 @@ Q and V functions:
 - **Q-function** ($Q^{\pi}(s_t, a_t)$): Expected cumulative reward if starting from $(s_t, a_t)$ and following policy $\pi$.
 - **Value Function** ($V^{\pi}(s_t)$): Expected cumulative reward from $s_t$ under $\pi$.  
   $$
-  V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(a_t|s_t)} [Q^{\pi}(s_t, a_t)]
+  V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(a_t\mid s_t)} [Q^{\pi}(s_t, a_t)]
   $$
 - **Utility**: Q-functions simplify policy improvement by selecting actions maximizing $Q^{\pi}(s_t, a_t)$.
 
@@ -271,7 +271,7 @@ In this phase, the algorithm evaluates or models how well the current policy is 
 $( Q^\pi(s_t, a_t) )$: Expected total reward from $( s_t )$, taking action $( a_t )$, then following $( \pi )$
 
 **Value function:**  
-$( V^\pi(s_t) )$: Expected total reward from $( s_t )$, averaging over $( \pi(a_t|s_t) )$
+$( V^\pi(s_t) )$: Expected total reward from $( s_t )$, averaging over $( \pi(a_t\mid s_t) )$
 
 **Cost:**
 - Simple in policy gradients (just sum rewards)
@@ -352,7 +352,7 @@ Update the policy using insights from the green box.
 ### 6.4. 🧩 Model-Based RL Algorithms
 
 - **Core Idea:**  
-  Learn a model $( p(s_{t+1}|s_t, a_t) )$ of the environment, then use it for planning or policy improvement.
+  Learn a model $( p(s_{t+1}\mid s_t, a_t) )$ of the environment, then use it for planning or policy improvement.
 
 - **Anatomy:**  
   - 🟩 *Green Box (Fit Model):* Learn dynamics model (e.g., next state prediction).  
@@ -379,7 +379,7 @@ Update the policy using insights from the green box.
 | Feature                   | Policy Gradients      | Value-Based Methods      | Actor-Critic Methods     | Model-Based RL            |
 |---------------------------|------------------------|---------------------------|---------------------------|----------------------------|
 | Core Idea                 | Optimize reward via gradients | Estimate $( Q )$/$( V )$ for optimal policy | Combine critic + actor     | Learn model; plan/improve policy |
-| Green Box (Estimation)    | Sum of rewards         | Fit $( Q(s,a) )$/$( V(s) )$ | Fit $( Q^\pi(s,a) )$/$( V^\pi(s) )$ | Fit dynamics model $( p(s'|s,a) )$ |
+| Green Box (Estimation)    | Sum of rewards         | Fit $( Q(s,a) )$/$( V(s) )$ | Fit $( Q^\pi(s,a) )$/$( V^\pi(s) )$ | Fit dynamics model $( p(s'\mid s,a) )$ |
 | Blue Box (Improvement)    | Gradient ascent        | $( \arg\max Q(s,a) )$     | Gradient ascent using critic | Planning / backprop / simulated data |
 | Policy Representation     | Explicit (e.g., NN)    | Implicit (via Q-function) | Explicit (Actor NN)       | Both explicit and implicit |
 | Sample Efficiency         | Low (on-policy)        | High (off-policy)         | Medium (on/off-policy)    | Very high                  |
