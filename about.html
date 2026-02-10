@@ -4,49 +4,157 @@ title: About Me
 banner: "/assets/images/banners/yuanpang-wa-iceburg.jpg"
 ---
 
-<div style="display: flex; align-items: flex-start; gap: 20px;">
-    <img src="/assets/images/banners/yuanpang.jpg" alt="Professional Self Picture"
-        style="width: 50%; height: auto; padding: 10px; border-radius: 10px;">
-    <p style="width: 50%; margin: 50;">
-        Hey there! I'm Leon, also known as Zhiyuan or Yuanpang. I'm a data enthusiast, AI practitioner, and lifelong
-        learner
-        with a deep passion for machine learning, deep learning, LLMs, and everything in between.
-    </p>
+<style>
+    .about-page {
+        display: grid;
+        gap: 28px;
+    }
+
+    .about-page h2 {
+        margin-bottom: 10px;
+    }
+
+    .about-hero {
+        display: grid;
+        grid-template-columns: minmax(220px, 340px) 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .about-hero-photo img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+    }
+
+    .about-hero-intro p {
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+
+    .about-expertise ul,
+    .about-recommended ul {
+        margin-top: 10px;
+    }
+
+    .about-expertise li,
+    .about-recommended li {
+        margin-bottom: 8px;
+    }
+
+    .about-reading-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 24px;
+    }
+
+    .about-reading-group h3 {
+        margin-bottom: 8px;
+    }
+
+    @media (max-width: 820px) {
+
+        .about-hero,
+        .about-reading-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="about-page">
+    <section class="about-hero">
+        <div class="about-hero-photo">
+            <img src="/assets/images/banners/yuanpang.jpg" alt="Leon or Yuanpang profile photo">
+        </div>
+        <div class="about-hero-intro">
+            <h1>Leon</h1>
+            <p>
+                In my daily work, I build enterprise end-to-end machine learning solutions, including full data
+                pipelines, training pipelines, and deployment pipelines.
+            </p>
+            <p>
+                This site is a structured knowledge base for practitioners: concept-first explanations, implementation
+                details,
+                and engineering tradeoffs drawn from hands-on work and course-driven study.
+            </p>
+        </div>
+    </section>
+
+    <section class="about-expertise">
+        <h2>Core Expertise</h2>
+        <ul>
+            <li>Machine Learning and Deep Learning: model fundamentals, optimization, and production-oriented reasoning.
+            </li>
+            <li>LLMs and Generative AI: alignment, post-training, and modern model architecture analysis.</li>
+            <li>Reinforcement Learning: beginner foundations through policy optimization and LLM-RL connections.</li>
+            <li>Deep Learning Systems and GPU Acceleration: autograd internals, systems design, and Triton-level
+                kernels.</li>
+            <li>Technical Writing: long-form notes designed to help readers move from theory to implementation.</li>
+        </ul>
+    </section>
+
+    <section class="about-recommended">
+        <h2>Recommended Reading</h2>
+        <div class="about-reading-grid">
+            <div class="about-reading-group">
+                <h3>Reinforcement Learning for Beginners</h3>
+                <ul>
+                    <li><a href="{{ site.baseurl }}{% post_url 2023-06-05-shusen-reinforcement-learning-01 %}">Reinforcement
+                            Learning Basics</a></li>
+                    <li><a href="{{ site.baseurl }}{% post_url 2023-09-01-ucb-reinforcement-learning-01 %}">Reinforcement
+                            Learning Introduction</a></li>
+                    <li><a href="{{ site.baseurl }}{% post_url 2023-09-01-ucb-reinforcement-learning-02 %}">Imitation
+                            Learning</a></li>
+                </ul>
+            </div>
+            <div class="about-reading-group">
+                <h3>Build Deep Learning/PyTorch-Style Foundations</h3>
+                <ul>
+                    <li><a href="{{ site.baseurl }}{% post_url 2022-10-10-cmu-dlsys-05 %}">Implement Your Own Deep
+                            Learning Library using Automatic Differentiation I</a></li>
+                    <li><a href="{{ site.baseurl }}{% post_url 2022-10-15-cmu-dlsys-06 %}">Fully Connected Networks,
+                            Optimization, Initialization and Activations</a></li>
+                </ul>
+            </div>
+            <div class="about-reading-group">
+                <h3>GPU Programming and Acceleration</h3>
+                <ul>
+                    <li><a href="{{ site.baseurl }}{% post_url 2022-10-25-cmu-dlsys-11 %}">DLSys Hardware
+                            Acceleration</a></li>
+                    <li><a href="{{ site.baseurl }}{% post_url 2025-09-10-triton-introduction %}">Triton
+                            Introduction</a></li>
+                </ul>
+            </div>
+            <div class="about-reading-group">
+                <h3>DeepSeek Series</h3>
+                <ul>
+                    <li><a href="{{ site.baseurl }}{% post_url 2025-03-01-deepseek-base-model %}">DeepSeek Base Models
+                            Series</a></li>
+                    <li><a href="{{ site.baseurl }}{% post_url 2025-03-01-deepseek-reasoning-model %}">DeepSeek
+                            Reasoning Models Series</a></li>
+                </ul>
+            </div>
+            <div class="about-reading-group">
+                <h3>LLM + RL</h3>
+                <ul>
+                    <li><a href="{{ site.baseurl }}{% post_url 2025-10-10-llm-rl-01 %}">Reinforcement Learning (RL) From
+                            Fundamentals to PPO and GRPO in LLMs (I)</a></li>
+                    <li><a href="{{ site.baseurl }}{% post_url 2025-10-11-llm-rl-02 %}">Reinforcement Learning (RL) From
+                            Fundamentals to PPO and GRPO in LLMs (II)</a></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-personal">
+        <h2>Beyond Work</h2>
+        <p>
+            Outside AI, I enjoy sports, music, photography, and travel. Photos used on this blog are from my
+            <a href="https://unsplash.com/@yuanpangwa" target="_blank" rel="noopener noreferrer">Unsplash</a>
+            and
+            <a href="https://www.pexels.com/@yuanpang-wa-406313444/" target="_blank"
+                rel="noopener noreferrer">Pexels</a>
+            pages.
+        </p>
+    </section>
 </div>
-
-<h2>What I Do</h2>
-
-<p>
-    By day, I work on building robust data pipelines and machine learning systems.
-    I enjoy diving into complex problems, breaking them down, and finding efficient solutions. Whether it's data
-    engineering, NLP, computer vision, or generative AI, I love exploring how technology can be leveraged to solve
-    real-world challenges.
-</p>
-
-<h2>What You'll Find Here</h2>
-
-<p>
-    This blog is my personal space to document my learning journey, share technical insights, and break down
-    cutting-edge AI concepts. I cover a range of topics, including:
-</p>
-<ul>
-    <li>Machine learning & deep learning & reinforcement learning</li>
-    <li>Large Language Models (LLMs) & generative AI</li>
-    <li>Data engineering & analytics</li>
-    <li>NLP & computer vision</li>
-    <li>Robotics & automation</li>
-    <li>Cloud computing & distributed systems</li>
-    <li>Optimization techniques for ML models</li>
-    <li>Practical coding tips & best practices</li>
-    <li>And more!</li>
-</ul>
-
-<h2> My Interests</h2>
-<p>
-    Beyond my work in AI and data, I have a wide range of interests. I love all kinds of sports, whether it's
-    basketball, soccer, or Chess! Music is another passion of mine—I enjoy both listening to and making songs.
-    Photography is also something I deeply appreciate, and all the images on this blog come from my <a
-        href="https://unsplash.com/@yuanpangwa" target="_blank">Unsplash</a> and <a
-        href="https://www.pexels.com/@yuanpang-wa-406313444/" target="_blank">Pexels</a>
-    pages. Additionally, I love traveling and exploring new places whenever I get the chance.
-</p>
