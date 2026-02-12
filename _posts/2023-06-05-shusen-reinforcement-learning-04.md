@@ -68,9 +68,9 @@ Each iteration consists of **two key update phases** — first the **Critic**, t
 1. **Observe State and Sample Action:**  
    - Observe the current state $( s_t )$.  
    - The Actor samples an action according to the current policy:  
-     $[
-     a_t \sim \pi(\cdot | s_t; \theta_t)
-     ]$
+     $$
+     a_t \sim \pi(\cdot \mid s_t; \theta_t)
+     $$
 
 2. **Perform Action:**  
    - Execute $( a_t )$ in the environment.  
@@ -90,30 +90,30 @@ Each iteration consists of **two key update phases** — first the **Critic**, t
 The Critic learns to better estimate future returns.
 
 4. **Evaluate Critic:**  
-   $[
+   $$
    q_t = q(s_t, a_t; w_t)
-   ]$
-   $[
+   $$
+   $$
    q'_{t+1} = q(s_{t+1}, a'_{t+1}; w_t)
-   ]$
+   $$
 
 5. **Compute TD Error (δₜ):**  
    Measures how far the prediction is from the target return:
-   $[
-   \delta_t = q_t - (r_t + \gamma \cdot q'_{t+1})
-   ]$
+   $$
+   \delta_t = q_t - \left(r_t + \gamma \cdot q'_{t+1}\right)
+   $$
    where $( \gamma )$ is the discount factor.
 
 6. **Differentiate Critic:**  
    Compute the gradient of the Q-function with respect to $( w )$:  
-   $[
+   $$
    d_{g,t} = \frac{\partial q(s_t, a_t; w)}{\partial w}
-   ]$
+   $$
 
 7. **Update Critic Parameters (Gradient Descent):**
-   $[
+   $$
    w_{t+1} = w_t - \alpha \cdot \delta_t \cdot d_{g,t}
-   ]$
+   $$
    $( \alpha )$ is the Critic’s learning rate.
 
 This update helps the critic produce more accurate estimates of $( Q_\pi(s,a) )$.
@@ -125,15 +125,15 @@ The Actor learns to choose actions that **increase the critic’s estimated valu
 
 8. **Differentiate Actor:**  
    Compute the gradient of the log-policy with respect to $( \theta )$:  
-   $[
-   d_{\pi,t} = \frac{\partial \log \pi(a_t | s_t; \theta)}{\partial \theta}
-   ]$
+   $$
+   d_{\pi,t} = \frac{\partial \log \pi(a_t \mid s_t; \theta)}{\partial \theta}
+   $$
 
 9. **Update Actor Parameters (Gradient Ascent):**  
    The policy parameters are updated toward actions the critic deems better:
-   $[
+   $$
    \theta_{t+1} = \theta_t + \beta \cdot q_t \cdot d_{\pi,t}
-   ]$
+   $$
    $( \beta )$ is the Actor’s learning rate.  
    The product $( q_t \cdot d_{\pi,t} )$ represents the **stochastic policy gradient estimate** $( g(a_t, \theta_t) )$.
 
@@ -175,45 +175,49 @@ This tight feedback loop allows **continuous learning during interaction** — f
   → This acts like a baseline, promoting actions that are better than expected.
 
 
-```mermaid
-flowchart TD
-    %% Subgraphs
-    subgraph Environment
-        ENV["Environment"]
-    end
+```text
+Actor-Critic Training Loop (render-safe diagram)
 
-    subgraph Agent
-        A["Observe State s_t"]
-        B["Actor: pi(a|s; theta)"]
-        C["Sample Action a_t"]
-        F["Receive r_t, s_t+1"]
-        E["Critic:<br/>V(s; w) for V-critic<br/>Q(s,a; w) for Q-critic"]
-        G["Compute TD Error:<br/><br/>V-critic: delta = r_t + gamma*V(s_t+1) - V(s_t)<br/><br/>Q-critic: delta = r_t + gamma*Q(s_t+1,a_t+1) - Q(s_t,a_t)"]
-        H["Update Critic:<br/>w = w + alpha_c * delta * grad_w"]
-        I["Update Actor:<br/>theta = theta + alpha_a * delta * grad_theta log pi(a_t|s_t)"]
-    end
+Observe s_t
+   |
+   v
+Actor pi(a|s; theta) -> sample a_t
+   |
+   v
+Execute a_t in environment
+   |
+   v
+Receive r_t, s_{t+1}
+   |
+   +--> Critic estimate (V-critic or Q-critic)
+   |      |
+   |      v
+   |   Compute TD error delta_t
+   |      |
+   |      v
+   |   Update critic params w
+   |
+   +--> Update actor params theta using policy gradient weighted by value/advantage
+   |
+   v
+Next step: s_t <- s_{t+1}, repeat
+```
 
-    %% Flow connections
-    A --> B
-    B --> C
-    C -->|execute a_t| ENV
-    ENV -->|r_t, s_t+1| F
-    F --> A
-    A --> E
-    E --> G
-    G --> H
-    G --> I
-    H --> A
-    I --> A
+```python
+# One iteration (generic Actor-Critic)
+s_t = env.state()
+a_t = sample_from_policy(pi_theta, s_t)
+r_t, s_tp1 = env.step(a_t)
 
-    %% Styling
-    classDef actorStyle fill:#e1f5ff,stroke:#0077cc,stroke-width:2px
-    classDef criticStyle fill:#ffe1f5,stroke:#cc0077,stroke-width:2px
-    classDef envStyle fill:#f0f0f0,stroke:#333,stroke-width:2px
-    
-    class B,C,I actorStyle
-    class E,G,H criticStyle
-    class ENV envStyle
+if critic_type == "V":
+    delta_t = r_t + gamma * V_w(s_tp1) - V_w(s_t)
+    w = w + alpha_c * delta_t * grad_w(V_w(s_t))
+else:  # Q-critic (SARSA-style)
+    a_tp1 = sample_from_policy(pi_theta, s_tp1)
+    delta_t = r_t + gamma * Q_w(s_tp1, a_tp1) - Q_w(s_t, a_t)
+    w = w + alpha_c * delta_t * grad_w(Q_w(s_t, a_t))
+
+theta = theta + alpha_a * delta_t * grad_theta(log_pi_theta(a_t, s_t))
 ```
 
 ## 🧠 5. Intuitive Understanding
@@ -550,7 +554,5 @@ Classical Actor–Critic formulations and SARSA-based policy gradient hybrids.
 |------|----------------|-----------|--------------|----------|
 | **V-Critic (A2C/A3C)** | $V(s)$ | $r_t + \gamma V(s_{t+1})$ | Advantage-Based | A2C, A3C, PPO |
 | **Q-Critic (SARSA-style)** | $Q(s,a)$ | $r_t + \gamma Q(s_{t+1}, a_{t+1})$ | Action-Based | SARSA, Classic AC |
-
-
 
 

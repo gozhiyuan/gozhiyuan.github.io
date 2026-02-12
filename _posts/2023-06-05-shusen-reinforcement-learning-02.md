@@ -38,53 +38,56 @@ Imagine an agent playing *Super Mario*.
 If Mario is at position $( s_t )$ and chooses the action “jump,” then $( Q_\pi(s_t, \text{jump}) )$ is the *expected total score* (coins, enemies defeated, etc.) Mario can still accumulate if he continues playing according to policy $( \pi )$.
 
 
-### 🌟 The Optimal Action-Value Function $Q^*(s, a)$
+### 🌟 The Optimal Action-Value Function $Q^\ast(s, a)$
 
-The **goal of value-based RL** is to find the **optimal** action-value function, $Q^*(s, a)$.
+The **goal of value-based RL** is to find the **optimal** action-value function, $Q^\ast(s, a)$.
 
 $$
-Q^*(s_t, a_t) = \max_\pi Q_\pi(s_t, a_t)
+Q^\ast(s_t, a_t) = \max_\pi Q_\pi(s_t, a_t)
 $$
 
-- **Definition:** $Q^*(s, a)$ represents the *maximum expected discounted return* achievable by taking action $a$ in state $s$, and then behaving optimally thereafter.  
-- **Significance:** No policy can outperform $Q^*(s, a)$; it represents the *best possible outcome*.  
+- **Definition:** $Q^\ast(s, a)$ represents the *maximum expected discounted return* achievable by taking action $a$ in state $s$, and then behaving optimally thereafter.  
+- **Significance:** No policy can outperform $Q^\ast(s, a)$; it represents the *best possible outcome*.  
 - **Optimal Action Selection:**  
   $$
-  a^* = \arg\max_a Q^*(s, a)
+  a^\ast = \arg\max_a Q^\ast(s, a)
   $$  
-  The optimal policy $\pi^*$ always chooses the action with the highest $Q^*(s, a)$.  
-- **Challenge:** $Q^*(s, a)$ is **unknown**, and directly estimating it for complex environments is computationally infeasible.
+  The optimal policy $\pi^\ast$ always chooses the action with the highest $Q^\ast(s, a)$.  
+- **Challenge:** $Q^\ast(s, a)$ is **unknown**, and directly estimating it for complex environments is computationally infeasible.
 
 
 #### 🎮 Example:
-If Mario’s $( Q^*(s, a) )$ values for the current frame are:
-| Action | Q*(s,a) |
-|--------|----------|
-| Jump   | 2500     |
-| Left   | 1000     |
-| Right  | 3000     |
+If Mario’s $( Q^\ast(s, a) )$ values for the current frame are:
+
+| Action | $Q^\ast(s,a)$ |
+|--------|---------------|
+| Jump   | 2500          |
+| Left   | 1000          |
+| Right  | 3000          |
+
 Then the optimal policy will choose **“Right”**, since it yields the maximum expected reward.
 
 
 ## 2️. Deep Q-Network (DQN)
 
-The **Deep Q-Network (DQN)** is a breakthrough solution that uses a **neural network** to *approximate* $( Q^*(s, a) )$.  
+The **Deep Q-Network (DQN)** is a breakthrough solution that uses a **neural network** to *approximate* $( Q^\ast(s, a) )$.  
 Introduced by DeepMind (2015), it allowed agents to play Atari games directly from pixels — achieving human-level performance.
 
 ### 🧮 Network Structure
 
 - **Function Approximation:**  
-  DQN uses a neural network $( Q(s, a; w) )$, parameterized by weights $( w )$, to approximate $( Q^*(s, a) )$.
+  DQN uses a neural network $( Q(s, a; w) )$, parameterized by weights $( w )$, to approximate $( Q^\ast(s, a) )$.
 - **Input:** The **state** $( s )$ (e.g., the current game screen).  
 - **Output:** A vector of Q-values for all possible actions $( a \in A )$.
 
 #### Example:
 If the action space is `{left, right, jump}`, the network might output:
-| **Action** | **$Q(s, a; w)$** |
-|-------------|------------------|
-| Left        | 2000 |
-| Right       | 1000 |
-| Jump        | 3000 |
+
+| Action | Q(s, a; w) |
+|--------|------------|
+| Left   | 2000       |
+| Right  | 1000       |
+| Jump   | 3000       |
 
 
 Here, the agent selects:
@@ -218,7 +221,7 @@ Both perspectives agree — the model **overestimated** by 100 minutes and must 
 
 ## 4. 🤖 TD Learning in Deep Q-Networks (DQN)
 
-In DQN, the neural network $Q(s, a; w)$ approximates the optimal function $Q^*(s, a)$.
+In DQN, the neural network $Q(s, a; w)$ approximates the optimal function $Q^\ast(s, a)$.
 
 | Component | Formula | Description |
 |------------|----------|-------------|
@@ -233,7 +236,61 @@ $$
 w_{t+1} = w_t - \alpha \, (q_t - y_t) \, \nabla_w Q(s_t, a_t; w_t)
 $$
 
-This iterative process — predicting, bootstrapping, and correcting via TD error — enables DQN to **progressively refine** $Q^*(s, a)$ across experience.
+This iterative process — predicting, bootstrapping, and correcting via TD error — enables DQN to **progressively refine** $Q^\ast(s, a)$ across experience.
+
+### 🔍 Practical Intuition (Common Questions)
+
+#### Does the Q-function output one score per action?
+Yes. For a given state $s_t$, DQN outputs a vector of values:
+$$
+[Q(s_t, a_1; w), Q(s_t, a_2; w), \dots, Q(s_t, a_n; w)]
+$$
+Each value estimates the **expected discounted return** of taking that action now, then following the learned policy.
+
+#### Does each action produce a reward $r_t$?
+Yes. After every action, the environment returns an immediate reward $r_t$ (possibly positive, zero, or negative).
+
+- **Taxi (Gym-style example):**
+  - step penalty: $-1$
+  - illegal pickup/drop-off: $-10$
+  - successful drop-off: $+20$
+- **Robotics (typical shaping):**
+  - progress term (e.g., closer to goal): positive
+  - control effort penalty (large torques): negative
+  - collision/safety penalty: negative
+  - task completion bonus: positive terminal reward
+
+#### What is the TD target $y_t$?
+$$
+y_t = r_t + \gamma \max_{a'} Q_{\text{target}}(s_{t+1}, a')
+$$
+
+- $r_t$: immediate reward at current step  
+- $\gamma \max_{a'} Q_{\text{target}}(s_{t+1}, a')$: discounted estimate of the **best future return** from the next state
+
+So $y_t$ is not just “current return.” It is a **one-step Bellman target**: reward now + estimated future value.
+
+#### Why can reward be added to a Q score?
+Because both represent return in the same unit. By Bellman recursion:
+$$
+G_t = r_t + \gamma G_{t+1}
+$$
+and Q-values are expectations of this return. So adding immediate reward to discounted future value is exactly the correct decomposition.
+
+#### Is $Q_{\text{target}}$ the same as $Q$?
+Same network architecture, different parameters.
+
+- **Online network** $Q(s,a;w)$: updated every gradient step.
+- **Target network** $Q_{\text{target}}(s,a;w^-)$: a delayed copy, updated periodically (or softly).
+
+This delay stabilizes training and reduces feedback loops from chasing a rapidly moving target.
+
+#### What does $\max_{a'}$ mean?
+It means: evaluate all possible next actions in $s_{t+1}$ and pick the largest predicted Q-value:
+$$
+\max_{a'} Q_{\text{target}}(s_{t+1}, a')
+$$
+This is “the value of the best next action,” not necessarily the sampled exploratory action.
 
 
 Then:
@@ -265,7 +322,7 @@ Each training step updates the neural network parameters $( w )$ using gradient 
    ]$
    where $( \alpha )$ is the learning rate.
 
-This process repeats as the agent interacts with the environment, **gradually improving** its estimation of $( Q^*(s, a) )$.
+This process repeats as the agent interacts with the environment, **gradually improving** its estimation of $( Q^\ast(s, a) )$.
 
 
 ### Why the TD Target Uses the Maximum Operator
@@ -281,7 +338,7 @@ This process repeats as the agent interacts with the environment, **gradually im
    $$
 3. This expresses the Bellman **Optimality Equation**, meaning the update always assumes the agent acts optimally in the future.
 
-Thus, DQN learns toward $Q^*(s,a)$ — the *optimal* value function — instead of just following the current policy $Q_\pi(s,a)$.
+Thus, DQN learns toward $Q^\ast(s,a)$ — the *optimal* value function — instead of just following the current policy $Q_\pi(s,a)$.
 
 ### Why DQN Only Looks One Step Ahead but Learns the Whole Path
 
@@ -294,7 +351,7 @@ Even though it updates using only the next state, this **recursive update propag
 Over many episodes:
 - Reward information moves backward through earlier states.
 - The Q-values across time become consistent.
-- The network converges toward the global optimum $Q^*(s,a)$.
+- The network converges toward the global optimum $Q^\ast(s,a)$.
 
 This is why **a one-step TD update** can still produce a **long-horizon optimal policy**.
 
@@ -355,12 +412,12 @@ This focuses learning on states where the network is most uncertain or wrong.
 | **Error Signal** | Measures model inaccuracy | $\delta_t = q_t - y_t$ |
 | **Optimization** | Gradient descent on squared error | $L_t = \frac{1}{2}(q_t - y_t)^2$ |
 | **Replay Buffer** | Reuses experience, improves stability | Sample random mini-batches |
-| **Goal** | Learn $Q^*(s,a)$ to act optimally | $a_t^* = \arg\max_a Q(s_t, a; w)$ |
+| **Goal** | Learn $Q^\ast(s,a)$ to act optimally | $a_t^\ast = \arg\max_a Q(s_t, a; w)$ |
 
 Through many one-step TD updates — sampled from diverse replay experiences —  
 DQN gradually propagates reward information backward, **learning the optimal long-term policy** even though each update looks ahead just one step.
 
-## 5. 🎯 Why DQN Learns $Q^*(s, a)$ (Optimal Action–Value Function) — Not $V(s)$ or $\pi(a|s)$
+## 5. 🎯 Why DQN Learns $Q^\ast(s, a)$ (Optimal Action–Value Function) — Not $V(s)$ or $\pi(a \mid s)$
 
 Let’s break down this important distinction between **DQN**, **Value Function**, and **Policy Learning** — since they all aim to “choose good actions,” but in **different ways**.
 
@@ -369,7 +426,7 @@ Let’s break down this important distinction between **DQN**, **Value Function*
 
 | **Method Type** | **Learns...** | **Output Meaning** | **Goal** |
 |------------------|----------------|--------------------|-----------|
-| **Value-Based (DQN)** | $Q^*(s, a)$ | Expected discounted return for each possible action in state $s$ | Pick $\arg\max_a Q^*(s, a)$ |
+| **Value-Based (DQN)** | $Q^\ast(s, a)$ | Expected discounted return for each possible action in state $s$ | Pick $\arg\max_a Q^\ast(s, a)$ |
 | **Policy-Based (PG / Actor)** | $\pi(a \mid s; \theta)$ | Probability distribution over actions | Sample $a \sim \pi(a \mid s; \theta)$ |
 | **Value Function (V)** | $V(s)$ | Expected return under the current policy | Evaluates how good a state is (but not which action to take) |
 
@@ -379,32 +436,32 @@ So:
 - $Q(s,a)$ → evaluates **state–action pairs**.
 - $\pi(a \mid s)$ → directly defines the **action probabilities**.
 
-### Why DQN Learns $Q^*(s,a)$, Not $V(s)$
+### Why DQN Learns $Q^\ast(s,a)$, Not $V(s)$
 
 The **Bellman optimality equation** defines the optimal action-value function:
 $$
-Q^*(s,a) = \mathbb{E} \big[ r_t + \gamma \max_{a'} Q^*(s',a') \mid s,a \big]
+Q^\ast(s,a) = \mathbb{E} \big[ r_t + \gamma \max_{a'} Q^\ast(s',a') \mid s,a \big]
 $$
 
 - The $\max_{a'}$ term ensures the function encodes the **best possible future actions**.
-- $Q^*(s,a)$ directly represents _“the total future reward if I take this action now and then act optimally.”_
+- $Q^\ast(s,a)$ directly represents _“the total future reward if I take this action now and then act optimally.”_
 
-Hence, if you know $Q^*(s,a)$, you can **derive both the value function and the optimal policy**:
-
-$$
-V^*(s) = \max_{a} Q^*(s,a)
-$$
+Hence, if you know $Q^\ast(s,a)$, you can **derive both the value function and the optimal policy**:
 
 $$
-\pi^*(a \mid s) =
+V^\ast(s) = \max_{a} Q^\ast(s,a)
+$$
+
+$$
+\pi^\ast(a \mid s) =
 \begin{cases}
-1, & \text{if } a = \arg\max_{a'} Q^*(s,a') \\
+1, & \text{if } a = \arg\max_{a'} Q^\ast(s,a') \\
 0, & \text{otherwise}
 \end{cases}
 $$
 
 That’s why DQN doesn’t need a separate policy network —  
-the **policy emerges** automatically as a *greedy function* over $Q^*$.
+the **policy emerges** automatically as a *greedy function* over $Q^\ast$.
 
 ### Does DQN Output the “Best Action”?
 
@@ -447,7 +504,7 @@ This means the **policy is deterministic** once the network parameters $w$ are f
 
 So the **behavior policy** during training is *stochastic*, but the **target policy** (the one being learned) is deterministic:
 $$
-\pi^*(s) = \arg\max_a Q^*(s,a)
+\pi^\ast(s) = \arg\max_a Q^\ast(s,a)
 $$
 
 
@@ -488,8 +545,8 @@ Thus:
 |---------|----------------|-------|
 | **DQN Policy** | ✅ Yes (greedy $\arg\max_a Q$) | Stochastic only during exploration (ε-greedy) |
 | **Action Space** | 🚫 Discrete only | Continuous actions require DDPG/TD3/SAC |
-| **Environment Transition $p(s'|s,a)$** | ❌ Usually stochastic | DQN learns expected Q-values over these outcomes |
-| **Q-function target** | Deterministic estimate of expectation | $Q^*(s,a) = \mathbb{E}[R_t + \gamma \max_a Q(s',a)]$ |
+| **Environment Transition $p(s' \mid s,a)$** | ❌ Usually stochastic | DQN learns expected Q-values over these outcomes |
+| **Q-function target** | Deterministic estimate of expectation | $Q^\ast(s,a) = \mathbb{E}[R_t + \gamma \max_a Q(s',a)]$ |
 
 💡 **Intuition:**  
 DQN itself acts deterministically once trained — but it *learns in a probabilistic world*, averaging over random transitions and rewards to approximate the optimal deterministic action for each state.

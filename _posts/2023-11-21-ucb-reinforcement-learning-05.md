@@ -47,33 +47,33 @@ More samples lead to a more accurate estimate.
 
 We aim to estimate the gradient $\nabla_\theta J(\theta)$ without access to transition probabilities.
 
-- **Log-Gradient Trick (Likelihood Ratio Trick):**
+**Log-Gradient Trick (Likelihood Ratio Trick):**
 
-  $$
-  \nabla_\theta P_\theta(\tau) = P_\theta(\tau) \nabla_\theta \log P_\theta(\tau)
-  $$
+$$
+\nabla_\theta P_\theta(\tau) = P_\theta(\tau) \nabla_\theta \log P_\theta(\tau)
+$$
 
-- Applying it:
+Applying it:
 
-  $$
-  \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[\nabla_\theta \log P_\theta(\tau) \cdot R(\tau)\right]
-  $$
+$$
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} [\nabla_\theta \log P_\theta(\tau) \cdot R(\tau)]
+$$
 
-- Since only the policy depends on $\theta$:
+Since only the policy depends on $\theta$:
 
-  $$
-  \log P_\theta(\tau) = \log P(s_1) + \sum_{t=1}^T \left(\log \pi_\theta(a_t|s_t) + \log P(s_{t+1}|s_t, a_t)\right)
-  $$
+$$
+\log P_\theta(\tau) = \log P(s_1) + \sum_{t=1}^T \left(\log \pi_\theta(a_t \mid s_t) + \log P(s_{t+1} \mid s_t, a_t)\right)
+$$
 
-  $$
-  \nabla_\theta \log P_\theta(\tau) = \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t|s_t)
-  $$
+$$
+\nabla_\theta \log P_\theta(\tau) = \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t \mid s_t)
+$$
 
-- So:
+So:
 
-  $$
-  \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[\left(\sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t|s_t)\right) \cdot R(\tau)\right]
-  $$
+$$
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[\left(\sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right) \cdot R(\tau)\right]
+$$
 
 **REINFORCE Algorithm Steps:**
 
@@ -96,31 +96,34 @@ We aim to estimate the gradient $\nabla_\theta J(\theta)$ without access to tran
 
 Here’s a breakdown:
 
-• 🎯 **Reinforcement Learning Objective**:  
+- 🎯 **Reinforcement Learning Objective**:  
   The goal of reinforcement learning (RL) is to find policy parameters (theta, $\theta$) that maximize the expected value of the sum of rewards under the trajectory distribution $P_\theta(\tau)$.  
   A trajectory ($\tau$) is a sequence like $(s_1, a_1, s_2, a_2, \dots)$, and its total reward is denoted as $r(\tau)$.
 
-• 📐 **Policy Gradient Calculation**:  
+- 📐 **Policy Gradient Calculation**:  
   The policy gradient algorithm directly differentiates the RL objective and performs gradient ascent to improve the policy.  
-  The REINFORCE formula:  
+  The REINFORCE formula:
+
   $$
-  \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[ \left( \sum_t \nabla_\theta \log \pi_\theta(a_t | s_t) \right) \cdot r(\tau) \right]
+  \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[ \left( \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \right) \cdot r(\tau) \right]
   $$
 
-• 🔍 **Comparison to Maximum Likelihood**:
-  ◦ In **maximum likelihood** (e.g. supervised/imitation learning), the goal is to maximize $\log \pi(a_t | s_t)$ for observed actions.  
-  ◦ The gradient simply sums $\nabla \log \pi(a_t | s_t)$ over all actions, increasing the probability of everything observed.  
-  ◦ In **policy gradients**, actions are sampled by the policy itself, and their gradient is **weighted by the reward** — i.e.,  
-  $$
-  \nabla \log \pi(a_t | s_t) \cdot r(\tau)
-  $$  
-  rather than being treated equally.
+- 🔍 **Comparison to Maximum Likelihood**:
+  - In **maximum likelihood** (e.g. supervised/imitation learning), the goal is to maximize $\log \pi(a_t \mid s_t)$ for observed actions.  
+  - The gradient simply sums $\nabla \log \pi(a_t \mid s_t)$ over all actions, increasing the probability of everything observed.  
+  - In **policy gradients**, actions are sampled by the policy itself, and their gradient is **weighted by the reward** — i.e.,
 
-• ⚖️ **The "Weighted" Aspect**:
-  ◦ High-reward trajectories → 📈 increase their log probabilities → make them more likely.  
-  ◦ Low-reward trajectories → 📉 decrease their log probabilities → make them less likely.  
-  ◦ This is like a **weighted version of the max-likelihood gradient**, where each action’s contribution is scaled by how good the outcome was.  
-  ◦ This intuitively captures **trial and error** learning:  
+    $$
+    \nabla \log \pi(a_t \mid s_t) \cdot r(\tau)
+    $$
+
+    rather than being treated equally.
+
+- ⚖️ **The "Weighted" Aspect**:
+  - High-reward trajectories → 📈 increase their log probabilities → make them more likely.  
+  - Low-reward trajectories → 📉 decrease their log probabilities → make them less likely.  
+  - This is like a **weighted version of the max-likelihood gradient**, where each action’s contribution is scaled by how good the outcome was.  
+  - This intuitively captures **trial and error** learning:
     > "Good stuff is made more likely, and bad stuff is made less likely." 💡
 
 ### 3.2. Trial and Error Learning
@@ -163,7 +166,7 @@ Reduces variance while maintaining unbiasedness.
 Subtract a baseline $b$ from the reward:
 
 $$
-\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[\left(\sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t|s_t)\right) \cdot (R(\tau) - b)\right]
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[\left(\sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right) \cdot (R(\tau) - b)\right]
 $$
 
 - Helps center rewards: above-average trajectories get boosted.
@@ -174,52 +177,52 @@ $$
 
 Here’s a detailed breakdown:
 
-• 🧠 **Purpose of a Baseline**:
-  ◦ Policy gradients aim to **increase** the log-probabilities of actions with **high rewards**, and **decrease** those with **low rewards** — mimicking trial-and-error learning.  
-  ◦ But if all rewards are positive ➕, even "bad" trajectories might still get their probabilities slightly increased 🤨.  
-  ◦ A **baseline** (denoted as `b`) is subtracted from the reward in the policy gradient formula:  
-  $$
-  \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[\sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t | s_t) \cdot (r(\tau) - b)\right]
-  $$  
-  ◦ This **centers** the reward:  
+- 🧠 **Purpose of a Baseline**:
+  - Policy gradients aim to **increase** the log-probabilities of actions with **high rewards**, and **decrease** those with **low rewards** — mimicking trial-and-error learning.  
+  - But if all rewards are positive ➕, even "bad" trajectories might still get their probabilities slightly increased 🤨.  
+  - A **baseline** (denoted as `b`) is subtracted from the reward in the policy gradient formula:  
+$$
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim P_\theta(\tau)} \left[\sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot (r(\tau) - b)\right]
+$$  
+  - This **centers** the reward:  
     - Better-than-average rewards ⬆️ get reinforced.  
     - Worse-than-average rewards ⬇️ get discouraged.  
-  ◦ Subtracting a constant baseline **does not bias** the estimator — it changes variance but not expectation ✔️.
+  - Subtracting a constant baseline **does not bias** the estimator — it changes variance but not expectation ✔️.
 
-• 📐 **Deriving the Optimal Baseline**:
-  ◦ Goal: **Minimize the variance** of the policy gradient estimator.  
-  ◦ Take the derivative of the variance w.r.t. `b`, set it to zero, solve for `b`.  
-  ◦ Use the identity:  
-    $$
-    P(\tau) \cdot \nabla \log P(\tau) = \nabla P(\tau)
-    $$  
-  ◦ Result:  
-    $$
-    b^* = \frac{\mathbb{E}[g^2 \cdot r]}{\mathbb{E}[g^2]}
-    $$  
+- 📐 **Deriving the Optimal Baseline**:
+  - Goal: **Minimize the variance** of the policy gradient estimator.  
+  - Take the derivative of the variance w.r.t. `b`, set it to zero, solve for `b`.  
+  - Use the identity:  
+$$
+P(\tau) \cdot \nabla \log P(\tau) = \nabla P(\tau)
+$$  
+  - Result:  
+$$
+b^* = \frac{\mathbb{E}[g^2 \cdot r]}{\mathbb{E}[g^2]}
+$$  
     where:  
-    - $g = \sum_t \nabla_\theta \log \pi_\theta(a_t | s_t)$  
+    - $g = \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)$  
     - $r = r(\tau)$ (total reward)
 
 
 ![alt_text](/assets/images/reinforcement-learning/05/4.png "image_tooltip")
 
-• 🧮 **Interpretation of the Optimal Baseline**:
-  ◦ This formula shows that the optimal baseline is a **reweighted average** of rewards.  
-  ◦ The weights are based on the **squared magnitude of the gradient** $g^2$.  
-  ◦ For policies with many parameters, this suggests:  
+- 🧮 **Interpretation of the Optimal Baseline**:
+  - This formula shows that the optimal baseline is a **reweighted average** of rewards.  
+  - The weights are based on the **squared magnitude of the gradient** $g^2$.  
+  - For policies with many parameters, this suggests:  
     - 🧩 Each parameter could have its own **separate optimal baseline**, depending on the gradient magnitude for that parameter.
 
-• 🛠️ **Practical Considerations**:
-  ◦ The **average reward** is a good (but suboptimal) baseline — widely used.  
-  ◦ The theoretically **optimal baseline** is rarely used because:  
+- 🛠️ **Practical Considerations**:
+  - The **average reward** is a good (but suboptimal) baseline — widely used.  
+  - The theoretically **optimal baseline** is rarely used because:  
     - It requires computing the gradient before computing the baseline 😵  
     - Adds complexity with limited practical benefit.  
-  ◦ Still, **reducing variance is critical** to make policy gradients work well:  
+  - Still, **reducing variance is critical** to make policy gradients work well:  
     - Helps with smaller batch sizes  
     - Stabilizes training  
     - Improves learning rate robustness  
-  ◦ ✅ Combine baselines with tricks like **reward-to-go** for better performance.
+  - ✅ Combine baselines with tricks like **reward-to-go** for better performance.
 
 
 ## 6. Off-Policy Policy Gradients
@@ -233,59 +236,59 @@ If $\theta$ changes, the distribution $P_\theta(\tau)$ changes, and old samples 
 
 ⚡ **Off-policy policy gradients** solve this by allowing reuse of data collected from previous policies or external sources like human demonstrations.
 
-• 🚫 **The Problem with On-Policy Learning**:
-  ◦ Neural networks usually make **tiny parameter updates** per step.  
-  ◦ On-policy methods require **fresh samples at every update**, making training **slow and expensive** when environment interaction is costly.
+- 🚫 **The Problem with On-Policy Learning**:
+  - Neural networks usually make **tiny parameter updates** per step.  
+  - On-policy methods require **fresh samples at every update**, making training **slow and expensive** when environment interaction is costly.
 
 
-• 🔄 **Introducing Importance Sampling for Off-Policy Learning**:
-  ◦ Use **importance sampling (IS)** to reuse off-policy data.  
-  ◦ IS adjusts expectations under the new policy using samples from a different policy:  
-  $$
-  \mathbb{E}_{\tau \sim P_\theta(\tau)}[f(\tau)] = \mathbb{E}_{\tau \sim P_{\bar{\theta}}(\tau)} \left[ \frac{P_\theta(\tau)}{P_{\bar{\theta}}(\tau)} f(\tau) \right]
-  $$  
-  ◦ The ratio $\frac{P_\theta(\tau)}{P_{\bar{\theta}}(\tau)}$ is the **importance weight**, used to correct for sampling bias.
+- 🔄 **Introducing Importance Sampling for Off-Policy Learning**:
+  - Use **importance sampling (IS)** to reuse off-policy data.  
+  - IS adjusts expectations under the new policy using samples from a different policy:  
+$$
+\mathbb{E}_{\tau \sim P_\theta(\tau)}[f(\tau)] = \mathbb{E}_{\tau \sim P_{\bar{\theta}}(\tau)} \left[ \frac{P_\theta(\tau)}{P_{\bar{\theta}}(\tau)} f(\tau) \right]
+$$  
+  - The ratio $\frac{P_\theta(\tau)}{P_{\bar{\theta}}(\tau)}$ is the **importance weight**, used to correct for sampling bias.
 
-• 🧮 **Derivation of Off-Policy Policy Gradient**:
-  ◦ Rewrite the objective using importance weights between new and old policies.  
-  ◦ Transition probabilities and initial states cancel out (they’re shared across policies):  
-  $$
-  \frac{P_{\theta'}(\tau)}{P_{\bar{\theta}}(\tau)} = \prod_{t=1}^T \frac{\pi_{\theta'}(a_t|s_t)}{\pi_{\bar{\theta}}(a_t|s_t)}
-  $$  
-  ◦ The **off-policy policy gradient** becomes:  
-  $$
-  \mathbb{E}_{\tau \sim P_{\bar{\theta}}} \left[\left(\prod_{t=1}^T \frac{\pi_{\theta'}(a_t|s_t)}{\pi_{\bar{\theta}}(a_t|s_t)}\right) \cdot \left( \sum_{t=1}^T \nabla_{\theta'} \log \pi_{\theta'}(a_t | s_t) \cdot r(\tau) \right) \right]
-  $$  
-  ◦ Each gradient term is now **weighted** by the importance ratio.
+- 🧮 **Derivation of Off-Policy Policy Gradient**:
+  - Rewrite the objective using importance weights between new and old policies.  
+  - Transition probabilities and initial states cancel out (they’re shared across policies):  
+$$
+\frac{P_{\theta'}(\tau)}{P_{\bar{\theta}}(\tau)} = \prod_{t=1}^T \frac{\pi_{\theta'}(a_t \mid s_t)}{\pi_{\bar{\theta}}(a_t \mid s_t)}
+$$  
+  - The **off-policy policy gradient** becomes:  
+$$
+\mathbb{E}_{\tau \sim P_{\bar{\theta}}} \left[\left(\prod_{t=1}^T \frac{\pi_{\theta'}(a_t \mid s_t)}{\pi_{\bar{\theta}}(a_t \mid s_t)}\right) \cdot \left( \sum_{t=1}^T \nabla_{\theta'} \log \pi_{\theta'}(a_t \mid s_t) \cdot r(\tau) \right) \right]
+$$  
+  - Each gradient term is now **weighted** by the importance ratio.
 
 
 ![alt_text](/assets/images/reinforcement-learning/05/5.png "image_tooltip")
 
-• ⚠️ **Challenges: Variance Explosion**:
-  ◦ Importance weights are **products over many time steps** → risk of exploding or vanishing values.  
-  ◦ If $\pi_{\theta'}(a_t|s_t)$ is very small, the product becomes near-zero → noisy, high-variance estimates.  
-  ◦ This makes off-policy policy gradients **even more unstable** than standard ones.
+- ⚠️ **Challenges: Variance Explosion**:
+  - Importance weights are **products over many time steps** → risk of exploding or vanishing values.  
+  - If $\pi_{\theta'}(a_t \mid s_t)$ is very small, the product becomes near-zero → noisy, high-variance estimates.  
+  - This makes off-policy policy gradients **even more unstable** than standard ones.
 
-• 🔧 **Approximations to Reduce Variance**:
+- 🔧 **Approximations to Reduce Variance**:
 
-  ◦ 🕒 **Reward-to-Go (Causality Trick)**:  
+  - 🕒 **Reward-to-Go (Causality Trick)**:  
     - Only sum future rewards at time $t$:  
       $$
       \hat{Q}_{i,t} = \sum_{t'=t}^T r(s_{t'}, a_{t'})
       $$  
     - Actions cannot affect past rewards → lowers variance.
 
-  ◦ 📉 **Ignore State Marginal Probabilities**:  
+  - 📉 **Ignore State Marginal Probabilities**:  
     - Common approximation: **ignore full trajectory weighting**, and only reweight based on action probabilities at each step.  
     - Reduces variance from exponential blowup.  
     - This approximation is valid when $\theta'$ is **not too different** from $\bar{\theta}$.
 
-• 🧪 **Practical Algorithms**:
-  ◦ 🔁 **TRPO (Trust Region Policy Optimization)** and **PPO (Proximal Policy Optimization)**:  
+- 🧪 **Practical Algorithms**:
+  - 🔁 **TRPO (Trust Region Policy Optimization)** and **PPO (Proximal Policy Optimization)**:  
     - Use **importance sampling** with smart constraints and approximations.  
     - Add techniques like **KL-divergence penalties**, **clipped ratios**, and **natural gradients** for stability.
 
-  ◦ 🧑‍🏫 **Incorporating Demonstrations**:  
+  - 🧑‍🏫 **Incorporating Demonstrations**:  
     - **Guided Policy Search** (Levine & Koltun, 2013) uses off-policy gradients + importance sampling to integrate human or demonstration data.  
 
 📚 **Summary**:  
@@ -304,13 +307,13 @@ $$
 Importance weight:
 
 $$
-\frac{P_{\theta'}(\tau)}{P_{\bar{\theta}}(\tau)} = \prod_{t=1}^T \frac{\pi_{\theta'}(a_t|s_t)}{\pi_{\bar{\theta}}(a_t|s_t)}
+\frac{P_{\theta'}(\tau)}{P_{\bar{\theta}}(\tau)} = \prod_{t=1}^T \frac{\pi_{\theta'}(a_t \mid s_t)}{\pi_{\bar{\theta}}(a_t \mid s_t)}
 $$
 
 Policy gradient becomes:
 
 $$
-\nabla_{\theta'} J(\theta') = \mathbb{E}_{\tau \sim P_{\bar{\theta}}(\tau)} \left[\left(\prod_{t=1}^T \frac{\pi_{\theta'}(a_t|s_t)}{\pi_{\bar{\theta}}(a_t|s_t)}\right) \cdot \left(\sum_{t=1}^T \nabla_{\theta'} \log \pi_{\theta'}(a_t|s_t)\right) \cdot R(\tau)\right]
+\nabla_{\theta'} J(\theta') = \mathbb{E}_{\tau \sim P_{\bar{\theta}}(\tau)} \left[\left(\prod_{t=1}^T \frac{\pi_{\theta'}(a_t \mid s_t)}{\pi_{\bar{\theta}}(a_t \mid s_t)}\right) \cdot \left(\sum_{t=1}^T \nabla_{\theta'} \log \pi_{\theta'}(a_t \mid s_t)\right) \cdot R(\tau)\right]
 $$
 
 **Problem:** Importance weights can explode or vanish exponentially → high variance.
@@ -323,43 +326,43 @@ Ignore marginal state distributions to reduce variance. Works when $\theta' \app
 
 📌 In **off-policy policy gradients**, a **first-order approximation** is a crucial trick used to **reduce the high variance** caused by importance sampling. It makes off-policy learning **practically feasible**, especially in deep reinforcement learning.
 
-• 🔁 **On-Policy Nature of Policy Gradients**:
-  ◦ Policy gradient algorithms are inherently **on-policy** — they require **new samples** from the **current policy** after each parameter update.  
-  ◦ Since deep RL uses **neural networks**, which require many small updates, this can make on-policy learning **extremely costly and inefficient** when sample generation is expensive.
+- 🔁 **On-Policy Nature of Policy Gradients**:
+  - Policy gradient algorithms are inherently **on-policy** — they require **new samples** from the **current policy** after each parameter update.  
+  - Since deep RL uses **neural networks**, which require many small updates, this can make on-policy learning **extremely costly and inefficient** when sample generation is expensive.
 
-• 🔄 **Enabling Off-Policy Learning via Importance Sampling**:
-  ◦ To reuse samples from **previous policies** or other sources (e.g., human demos), importance sampling is applied.  
-  ◦ This allows computing expectations under the **new policy** $\pi_{\theta'}$ using data collected from an **old policy** $\pi_\theta$.  
-  ◦ The key is the **importance weight**:  
-  $$
-  \frac{P_{\theta'}(\tau)}{P_\theta(\tau)} = \prod_{t=1}^T \frac{\pi_{\theta'}(a_t|s_t)}{\pi_\theta(a_t|s_t)}
-  $$
+- 🔄 **Enabling Off-Policy Learning via Importance Sampling**:
+  - To reuse samples from **previous policies** or other sources (e.g., human demos), importance sampling is applied.  
+  - This allows computing expectations under the **new policy** $\pi_{\theta'}$ using data collected from an **old policy** $\pi_\theta$.  
+  - The key is the **importance weight**:  
+$$
+\frac{P_{\theta'}(\tau)}{P_\theta(\tau)} = \prod_{t=1}^T \frac{\pi_{\theta'}(a_t \mid s_t)}{\pi_\theta(a_t \mid s_t)}
+$$
 
-• ⚠️ **The Variance Problem**:
-  ◦ While this ratio makes the estimator **unbiased**, it leads to **exponentially large variance**.  
-  ◦ If $\pi_{\theta'}$ assigns low probability to actions taken by $\pi_\theta$, the product becomes **close to zero**, making gradients **very noisy**.  
-  ◦ This is **even worse** than the already high variance in on-policy gradients.
+- ⚠️ **The Variance Problem**:
+  - While this ratio makes the estimator **unbiased**, it leads to **exponentially large variance**.  
+  - If $\pi_{\theta'}$ assigns low probability to actions taken by $\pi_\theta$, the product becomes **close to zero**, making gradients **very noisy**.  
+  - This is **even worse** than the already high variance in on-policy gradients.
 
-• 🧮 **The First-Order Approximation**:
-  ◦ To **mitigate** this, a **first-order approximation** is applied.  
-  ◦ **Idea**: Drop the full product over all time steps and use **only the per-step ratio** of action probabilities:  
-  $$
-  \frac{\pi_{\theta'}(a_t|s_t)}{\pi_\theta(a_t|s_t)}
-  $$  
-  ◦ This approximation **ignores the trajectory-level probability ratio**, focusing only on the **current time step's action probability**.
+- 🧮 **The First-Order Approximation**:
+  - To **mitigate** this, a **first-order approximation** is applied.  
+  - **Idea**: Drop the full product over all time steps and use **only the per-step ratio** of action probabilities:  
+$$
+\frac{\pi_{\theta'}(a_t \mid s_t)}{\pi_\theta(a_t \mid s_t)}
+$$  
+  - This approximation **ignores the trajectory-level probability ratio**, focusing only on the **current time step's action probability**.
 
-• 🤔 **Rationale and Implications**:
-  ◦ This avoids the **exponential blowup in variance**, making gradient estimates **much more stable**.  
-  ◦ It introduces **bias** (no longer exact in expectation), but:
+- 🤔 **Rationale and Implications**:
+  - This avoids the **exponential blowup in variance**, making gradient estimates **much more stable**.  
+  - It introduces **bias** (no longer exact in expectation), but:
     - The bias is **bounded** if $\theta'$ is **close to** $\theta$.  
     - The resulting update can still **improve the policy** in practice.  
-  ◦ It's a **practical trade-off**: give up some theoretical correctness to **gain massive stability** and usability in deep RL.
+  - It's a **practical trade-off**: give up some theoretical correctness to **gain massive stability** and usability in deep RL.
 
-• 🧪 **When to Use It**:
-  ◦ Especially useful when:
+- 🧪 **When to Use It**:
+  - Especially useful when:
     - Sample collection is **expensive**.
     - Policies change **gradually** (e.g., small learning rates).  
-  ◦ Many modern RL algorithms (e.g., PPO) implicitly rely on such **approximations**.
+  - Many modern RL algorithms (e.g., PPO) implicitly rely on such **approximations**.
 
 
 ✅ **Summary**:  
@@ -378,7 +381,7 @@ Backpropagation needs a differentiable computation graph with many parameters.
 Define a pseudo-loss:
 
 $$
-\tilde{J} = \sum_{i} \sum_{t} \log \pi(a_{i,t}|s_{i,t}) \cdot Q_{i,t}
+\tilde{J} = \sum_{i} \sum_{t} \log \pi(a_{i,t} \mid s_{i,t}) \cdot Q_{i,t}
 $$
 
 When autodiff differentiates $\tilde{J}$, it recovers the true policy gradient.
