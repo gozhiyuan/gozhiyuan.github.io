@@ -38,7 +38,7 @@ Policy gradient methods like **REINFORCE** suffer from **high variance** because
 In vanilla policy gradient:
 
 $$
-\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_t \nabla_\theta \log \pi_\theta(a_t | s_t) \cdot R_t \right]
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R_t \right]
 $$
 
 - $R_t$ is the **reward-to-go**, estimated from a single trajectory.
@@ -48,7 +48,7 @@ To reduce variance, we introduce a **critic** that estimates value functions. Th
 
 ### 🎭 The Actor
 
-- The policy $\pi_\theta(a_t | s_t)$, responsible for selecting actions.
+- The policy $\pi_\theta(a_t \mid s_t)$, responsible for selecting actions.
 - Learns via gradient ascent on an improved policy gradient estimate.
 
 ### 🧮 The Critic
@@ -83,7 +83,7 @@ $$
 - **Crucial for variance reduction.**
 - Encourages actions that are better-than-average:
 $$
-\nabla_\theta J(\theta) = \mathbb{E} \left[ \nabla_\theta \log \pi_\theta(a_t | s_t) \cdot A^\pi(s_t, a_t) \right]
+\nabla_\theta J(\theta) = \mathbb{E} \left[ \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot A^\pi(s_t, a_t) \right]
 $$
 
 
@@ -247,155 +247,193 @@ $$
 - All these tools aim to produce a **more reliable critic** to improve policy gradients.
 
 
-## 4. Actor-Critic Algorithm Structure
+## 4. Actor-Critic Training Regimes (Online, Batch, Offline)
 
 ![alt_text](/assets/images/reinforcement-learning/06/3.png "image_tooltip")
 
-1. **Generate Samples**
-2. **Fit Value Function**
-3. **Evaluate Advantage**:  
-   $( \hat{A}^\pi(s, a) = r + \gamma \hat{V}^\pi(s') - \hat{V}^\pi(s) )$
-4. **Construct Policy Gradient**
-5. **Gradient Ascent**
+Many terms are overloaded. A clean way is to separate **three axes**:
+
+1. **Data source**: current policy data vs replay data vs fixed offline dataset
+2. **Update schedule**: per-step update vs mini-batch update vs large-batch/epoch update
+3. **Target type**: Monte Carlo vs bootstrap (or in-between n-step / GAE)
+
+### 4.1 Batch Actor-Critic (On-Policy)
 
 ![alt_text](/assets/images/reinforcement-learning/06/4.png "image_tooltip")
 
-### Batch Actor-Critic Algorithm  
-A typical batch actor-critic algorithm involves these steps:
+Typical loop:
 
-1. **Generate samples**: Run the current policy to collect a batch of $N$ trajectories.
+1. Roll out current policy `pi_theta` for `N` trajectories.
+2. Fit critic `V_phi` (or a Q-critic) on this fresh batch.
+3. Compute advantages (often GAE / n-step).
+4. Update actor with policy gradient.
+5. Discard old batch (or use only a few epochs, then recollect data).
 
-2. **Fit the approximate value function**: Train the neural network $\hat{V}^\pi_\phi(s)$ using the collected samples. This can be done with Monte Carlo estimates or bootstrap estimates.
+Policy gradient form:
+$$
+\nabla_\theta J(\theta) \approx \frac{1}{N}\sum_{i,t}\nabla_\theta \log \pi_\theta(a_{i,t}\mid s_{i,t})\hat{A}_{i,t}
+$$
+Plain text fallback: `grad J(theta) ~= (1/N) * sum_{i,t} grad log pi_theta(a_{i,t}|s_{i,t}) * Ahat_{i,t}`.
 
-3. **Evaluate the approximate advantage**:  
-   For each state-action tuple $(s_i, a_i)$ in the sampled data, calculate the advantage as:  
-   $$\hat{A}^\pi(s_i, a_i) = r(s_i, a_i) + \gamma \hat{V}^\pi_\phi(s'_i) - \hat{V}^\pi_\phi(s_i)$$  
-   This is a common way to use the critic as a state-dependent baseline.  
-   The term $(Q - V)$ is called the advantage function, representing how much better an action $a_t$ is compared to the average expected performance in state $s_t$.
+Properties:
+- ✅ Stable updates, easy to reason about
+- ✅ Strong with trust-region style methods (TRPO/PPO)
+- ❌ Lower sample efficiency (data is used briefly)
 
-4. **Construct a policy gradient estimator**:  
-   Use these advantage values to compute the policy gradient, typically by multiplying the gradient of the log-probability of the action by the approximate advantage:  
-   $$\nabla_\theta J(\theta) \approx \nabla_\theta \log \pi_\theta(a|s) \hat{A}^\pi(s, a)$$
+### 4.2 Online Actor-Critic (Streaming, Step-Wise)
 
-5. **Take a gradient ascent step**:  
-   Update the policy parameters $\theta$ using the calculated policy gradient:  
-   $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$
+Online AC updates immediately after each transition:
 
-### Online Actor-Critic Algorithm  
-Online actor-critic algorithms update the policy and value function at every single time step, rather than collecting a full batch of trajectories first. A basic online algorithm looks like this:
+1. Observe transition `(s_t, a_t, r_t, s_{t+1})`
+2. TD target:
+$$
+y_t = r_t + \gamma \hat{V}_\phi(s_{t+1})
+$$
+Plain text fallback: `y_t = r_t + gamma * V_phi(s_{t+1})`.
+3. Advantage:
+$$
+\hat{A}_t = y_t - \hat{V}_\phi(s_t)
+$$
+Plain text fallback: `Ahat_t = y_t - V_phi(s_t)`.
+4. Update actor and critic right away
 
-1. **Take an action** $a$ from the policy $\pi_\theta(a|s)$ and observe a transition $(s, a, s', r)$.
+Properties:
+- ✅ Fast reaction to new experience
+- ✅ Low memory requirement
+- ❌ High gradient noise with deep nets if truly one-sample updates
 
-2. **Update the value function**:  
-   Update $\hat{V}^\pi_\phi(s)$ using a bootstrap target:  
-   $$y \approx r + \gamma \hat{V}^\pi_\phi(s')$$  
-   This update only requires the immediate next state $s'$, not the entire future trajectory.
+### 4.3 "Online-Batch" Actor-Critic (Most Practical Deep RL)
 
-3. **Evaluate the advantage**:  
-   Calculate the advantage for the current step as:  
-   $$\hat{A}^\pi(s, a) = r + \gamma \hat{V}^\pi_\phi(s') - \hat{V}^\pi_\phi(s)$$
+This phrase means: **data is collected online**, but **training is done in batches**.
 
-4. **Construct and apply policy gradient**:  
-   Estimate the policy gradient as:  
-   $$\nabla_\theta J(\theta) \approx \nabla_\theta \log \pi_\theta(a|s) \hat{A}^\pi(s, a)$$  
-   and update the policy parameters.
+Common pipeline (A2C/PPO-style):
+1. Run $K$ environments in parallel for $T$ steps
+2. Build one batch of size $K \times T$
+3. Compute returns/advantages (often GAE)
+4. Train with SGD mini-batches
 
-5. **Repeat** this process at every single time step.
+So it is "online" in data collection, but "batch" in optimization.
 
+### 4.4 Monte Carlo vs Bootstrap Inside Actor-Critic
 
+These are **target estimators**, not separate algorithm families.
 
-For deep reinforcement learning, online updates with a single sample can lead to high variance and unstable training for neural networks. To address this, batching is often used in practice, even in online settings, through:
+Monte Carlo target:
+$$
+y_t^{MC}=\sum_{l=0}^{T-t}\gamma^l r_{t+l}
+$$
 
-![alt_text](/assets/images/reinforcement-learning/06/5.png "image_tooltip")
+Bootstrap (TD(0)) target:
+$$
+y_t^{TD}=r_t+\gamma\hat{V}_\phi(s_{t+1})
+$$
 
-- **Synchronized Parallel Actor-Critic**:  
-  Multiple "workers" (simulators) run in parallel, collecting transitions. The collected data is then aggregated into a batch for synchronous updates to the value function and policy.
+n-step target:
+$$
+y_t^{(n)}=\sum_{l=0}^{n-1}\gamma^l r_{t+l}+\gamma^n \hat{V}_\phi(s_{t+n})
+$$
 
-- **Asynchronous Parallel Actor-Critic (A3C)**:  
-  Workers run asynchronously. When a worker collects enough transitions, it makes an update using its local data and the latest global parameters, without waiting for other workers.  
-  This can be faster but introduces a slight bias because transitions might have been generated by slightly older actor parameters. However, this bias is often outweighed by the performance gains.
+Comparison:
 
+| Target | Bias | Variance | Typical use |
+|---|---|---|---|
+| Monte Carlo | Low | High | Short episodes, low noise tasks |
+| TD(0) bootstrap | Higher | Low | Online AC, fast continual updates |
+| n-step / GAE | Medium | Medium | PPO/A2C default in practice |
+
+### 4.5 Off-Policy vs Offline Actor-Critic
+
+These two are related but not identical:
+
+- **Off-policy actor-critic (online)**:
+  - Still interacts with environment
+  - Also reuses replay data from older behavior policies
+  - Examples: DDPG, TD3, SAC
+
+- **Offline actor-critic**:
+  - No environment interaction during training
+  - Learns only from a fixed dataset
+  - Must handle out-of-distribution action errors very carefully
+  - Examples: CQL, IQL, AWAC-style pipelines
+
+So: offline RL is a stricter setting than off-policy RL.
 
 ## 5. Design Decisions & Practical Implementations
 
 ### 5.1 Neural Network Architectures
 
-- **Separate Networks**:
-  - ✅ Simpler, stable
-  - ❌ No shared features
+| Design | Pros | Cons | Typical choice |
+|---|---|---|---|
+| Separate actor/critic networks | Stable optimization, less gradient interference | More parameters, no shared representation | Default when training is unstable |
+| Shared backbone + two heads | Better compute efficiency, shared features | Actor and critic gradients can conflict | Common in on-policy vision/state encoders |
+| Partially shared (early shared, late separate) | Balance efficiency and stability | More tuning complexity | Good compromise in larger models |
 
-- **Shared Network**:
-  - ✅ Efficient, shared learning
-  - ❌ Harder to train
+Rule of thumb:
+- If critic loss dominates and policy collapses, move toward **more separation**.
+- If compute is tight and features overlap strongly, use **shared trunk + loss balancing**.
 
 ### 5.2 Batch Sizes and Parallelism
 
-- **Synchronous Parallel**:
-  - ✅ Stable batches
-  - ❌ More compute
+![alt_text](/assets/images/reinforcement-learning/06/5.png "image_tooltip")
 
-- **Asynchronous Parallel**:
-  - ✅ Fast
-  - ❌ Slight bias
+#### Synchronous Parallel (A2C-style)
+- Workers collect data, then all wait for joint update.
+- ✅ Consistent policy version per batch (cleaner gradients)
+- ✅ Better reproducibility and debugging
+- ❌ Idle waiting on slow workers, higher wall-clock cost
 
+#### Asynchronous Parallel (A3C-style)
+- Workers update without global synchronization.
+- ✅ High throughput
+- ✅ Better hardware utilization
+- ❌ Policy-lag / stale-gradient bias (worker data may be slightly old)
 
-### 5.3 Off-Policy Actor-Critic
+Practical guidance:
+- Prefer synchronous if you care about stability and ablations.
+- Prefer asynchronous when throughput is the top constraint.
 
-Online and batch actor-critic methods discussed above are generally **on-policy**, meaning they use data collected by the **current policy** to update that same policy.  
-**Off-policy** actor-critic algorithms aim to leverage **transitions generated by older policies**, typically stored in a **replay buffer**. This can significantly improve **sample efficiency**.
+### 5.3 Replay Buffer System Design (Core for Off-Policy / Offline AC)
 
 ![alt_text](/assets/images/reinforcement-learning/06/6.png "image_tooltip")
 
-#### Challenges of Off-Policy Learning
-
-Using old transitions directly introduces challenges:
-
-- The action $a_i$ from the replay buffer did **not come from** the latest policy $\pi_\theta$.
-- Therefore, the **policy gradient** cannot be directly computed using these old actions, as it needs to be an **expectation under the current policy**.
-
-To fix this, off-policy methods introduce several adjustments:
-
-#### 1. Learn a Q-function Instead of a V-function
-
-- A Q-function $Q^\pi(s, a)$ represents the expected return starting from state $s$, taking action $a$, and then following policy $\pi$.
-- The **Q-function is valid for any action $a$**, not just those taken by the current policy.
-- This allows the critic to be trained on actions **from the replay buffer**, even if they were produced by older policies.
-
-#### 2. Compute Targets for Q-function
-
-The Q-function target is:
+Store per transition:
 $$
-y_i = r_i + \gamma \hat{Q}^\pi_\phi(s'_i, a'_i)
+(s_t, a_t, r_t, s_{t+1}, d_t)
 $$
-- $a'_i$ is the action the **current policy** $\pi_\theta$ would take in state $s'_i$.
-- $a'_i$ can be **sampled from the policy network** without interacting with the simulator.
+Optional: behavior log-prob, episode id, n-step cumulative reward.
 
-#### 3. Policy Update for Off-Policy
+Key design choices:
 
-The policy gradient is estimated as:
+1. **Capacity**
+   - Small buffer: fresher but less diverse
+   - Large buffer: diverse but may contain stale behavior
+
+2. **Sampling**
+   - Uniform sampling: simple and stable baseline
+   - Prioritized replay: faster learning on high-TD-error samples, but needs importance correction
+
+3. **Update-to-data ratio (UTD)**
+   - Number of gradient steps per env step
+   - Too high UTD can overfit stale data and destabilize critic
+
+4. **Target stabilization**
+   - Use target networks and soft update ($\tau$) to reduce bootstrapping instability
+
+5. **Offline-specific safeguards**
+   - Penalize OOD actions (conservative Q-learning ideas)
+   - Constrain actor toward dataset support (behavior regularization / expectile-style methods)
+
+#### Off-Policy Actor-Critic Objective (High-Level)
+
+Critic target:
 $$
-\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_i \nabla_\theta \log \pi_\theta(a^\pi_i | s_i) \hat{Q}^\pi_\phi(s_i, a^\pi_i)
+y_i = r_i + \gamma \hat{Q}_{\bar{\phi}}(s'_i, a'_i),\quad a'_i \sim \pi_\theta(\cdot\mid s'_i)
 $$
-- $a^\pi_i$ is sampled from the **current policy** $\pi_\theta$ at a **replay buffer state** $s_i$.
-- Unlike on-policy methods that rely on advantage estimates, this off-policy update uses the **Q-values directly**.
 
-> While using Q-values instead of advantages may increase **variance**, it’s manageable because:
-> - Many actions can be sampled from the policy network
-> - No need to interact with the environment to get new data
-
-#### Remaining Bias
-
-A source of bias remains:  
-- The states $s_i$ in the replay buffer may **not reflect** the distribution induced by the current policy.
-- This is generally **accepted**, as the replay buffer provides **broad state coverage**, which helps generalization.
-
-
-#### Example: Soft Actor-Critic (SAC)
-
-A notable example of an off-policy actor-critic method is **Soft Actor-Critic (SAC)**, which:
-- Uses entropy-regularized objectives
-- Maintains sample efficiency through off-policy learning
-- Improves exploration and stability with stochastic policies
+Actor objective (maximize Q, optionally with entropy regularization):
+$$
+J_{\text{actor}}(\theta)=\mathbb{E}_{s_i\sim \mathcal{D}}\!\left[\hat{Q}_\phi\!\left(s_i,\pi_\theta(s_i)\right)\right]+\alpha\,\mathbb{E}_{s_i\sim \mathcal{D}}\!\left[\mathcal{H}\!\left(\pi_\theta(\cdot\mid s_i)\right)\right]
+$$
 
 
 ## 6. Critics as Baselines (Unbiased Variance Reduction)
@@ -405,7 +443,7 @@ A notable example of an off-policy actor-critic method is **Soft Actor-Critic (S
 Unbiased if the baseline **only depends on state**:
 
 $$
-\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i,t} \nabla_\theta \log \pi_\theta(a_{i,t}|s_{i,t}) (Q - V)
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i,t} \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) (Q - V)
 $$
 
 - ✅ Unbiased  
@@ -418,7 +456,7 @@ $$
 Baseline $( b(s,a) )$ introduces bias, but can correct it:
 
 $$
-\nabla_\theta J(\theta) = \mathbb{E}[\nabla_\theta \log \pi(a|s) (Q - b(s,a))] + \mathbb{E}[\nabla_\theta \mathbb{E}[b(s,a)]]
+\nabla_\theta J(\theta) = \mathbb{E}[\nabla_\theta \log \pi(a \mid s) (Q - b(s,a))] + \mathbb{E}[\nabla_\theta \mathbb{E}[b(s,a)]]
 $$
 
 - ✅ Very low variance with good $( b(s,a) )$
@@ -528,9 +566,10 @@ Actor-Critic combines **actor** and **critic** for reduced variance and efficien
 ### Key Takeaways:
 
 - **Policy Evaluation**: Fit $( V^\pi )$, $( Q^\pi )$, or $( A^\pi )$
+- **Training Regimes**: Distinguish online, batch-on-policy, online-batch, and offline
 - **Discounting**: Enables infinite horizon, lowers variance
 - **Architecture**: Shared vs separate networks
-- **Batching**: Sync/async, replay buffers
+- **Batching + Systems**: Sync/async workers, replay buffer design, UTD ratio
 - **Baselines**: Reduce variance (state-dependent = no bias)
 - **GAE / Traces**: Bias-variance tuning
 
@@ -542,3 +581,336 @@ Actor-Critic combines **actor** and **critic** for reduced variance and efficien
 - **A3C**: Asynchronous, online
 - **SAC**: Off-policy with entropy regularization
 - **Q-Prop**: Control variates for sample-efficient learning
+
+
+## 8. Worked Summary Example (One Trajectory, All Update Styles)
+
+This final section uses one shared trajectory and shows how each training style updates differently.
+
+### 8.1 Shared Setup
+
+- Discount: `gamma = 0.9`
+- Trajectory:
+  - `t=0`: `(s0, a0, r1=1, s1)`
+  - `t=1`: `(s1, a1, r2=2, s2)`
+  - `t=2`: `(s2, a2, r3=3, terminal)`
+- Critic snapshot before updates:
+  - `V(s0)=4.0`, `V(s1)=3.0`, `V(s2)=1.0`, `V(terminal)=0`
+
+1-step TD targets and advantages:
+$$
+y_0 = 1 + 0.9\cdot 3.0 = 3.7,\quad \hat{A}_0 = 3.7 - 4.0 = -0.3
+$$
+$$
+y_1 = 2 + 0.9\cdot 1.0 = 2.9,\quad \hat{A}_1 = 2.9 - 3.0 = -0.1
+$$
+$$
+y_2 = 3 + 0.9\cdot 0 = 3.0,\quad \hat{A}_2 = 3.0 - 1.0 = 2.0
+$$
+
+Monte Carlo returns:
+$$
+G_2=3,\quad G_1=2+0.9\cdot 3=4.7,\quad G_0=1+0.9\cdot 2+0.9^2\cdot 3=5.23
+$$
+
+---
+
+### 8.2 On-Policy Batch (single update cycle)
+
+Assume one training iteration `k` starts from parameters `(theta_k, phi_k)`.
+
+Detailed workflow on this exact trajectory:
+
+1. **Collect fresh data with current policy**
+   - Run `pi_{theta_k}` in the environment.
+   - We get `(s0,a0,r1,s1), (s1,a1,r2,s2), (s2,a2,r3,terminal)`.
+   - This data is on-policy because it was generated by `theta_k`.
+
+2. **Build learning targets from this same batch**
+   - TD(0) targets from Section 8.1:
+     - `y0=3.7, y1=2.9, y2=3.0`
+   - Advantages:
+     - `Ahat=[-0.3, -0.1, +2.0]`
+   - If using n-step or GAE, only this computation changes; the pipeline is the same.
+
+3. **Critic update on this batch**
+   - Fit `V_phi` by minimizing:
+$$
+L_V(\phi)=\frac{1}{3}\sum_{t=0}^2\left(V_\phi(s_t)-y_t\right)^2
+$$
+   - Intuition with our numbers:
+     - `V(s2)=1.0` is far below target `3.0`, so critic strongly increases value around `s2`.
+     - `V(s0)=4.0` is above `3.7`, and `V(s1)=3.0` is above `2.9`, so those tend to move slightly down.
+
+4. **Actor update using same transitions**
+   - Policy loss (gradient ascent form):
+$$
+L_\pi(\theta)=-\frac{1}{3}\sum_{t=0}^2 \log \pi_\theta(a_t\mid s_t)\,\hat{A}_t
+$$
+   - Effect of signs:
+     - `Ahat_0<0`, `Ahat_1<0`: decrease probability of `(a0|s0)` and `(a1|s1)`.
+     - `Ahat_2>0`: increase probability of `(a2|s2)`.
+
+5. **End of cycle: discard rollout and recollect**
+   - After updates, parameters become `(theta_{k+1}, phi_{k+1})`.
+   - Old rollout is no longer strictly on-policy for `theta_{k+1}`, so we recollect new data.
+   - This is why on-policy batch methods are stable but less sample-efficient.
+
+### 8.3 Synchronous Parallel (A2C-style)
+
+Assume `K=2` workers, each collects `T=3` steps with the same parameter snapshot `theta_k`.
+
+Detailed workflow with shared example:
+
+1. **Parameter broadcast**
+   - Global learner sends the same `(theta_k, phi_k)` to Worker 1 and Worker 2.
+
+2. **Parallel rollout**
+   - Worker 1 collects our shared trajectory (3 steps).
+   - Worker 2 collects another 3-step trajectory from its own environment instance.
+   - No one updates model weights during collection.
+
+3. **Barrier synchronization**
+   - Both workers stop and wait.
+   - Combined batch size is `K*T=6` transitions.
+
+4. **Compute targets/advantages on aggregated batch**
+   - Worker 1 samples contribute `Ahat=[-0.3,-0.1,+2.0]`.
+   - Worker 2 contributes its own advantages.
+   - Learner averages losses across all 6 transitions.
+
+5. **Single synchronized update**
+   - One optimizer step produces `(theta_{k+1}, phi_{k+1})`.
+   - This gradient is consistent with one parameter snapshot, so variance is lower and training is easier to reason about.
+
+6. **Broadcast new weights and repeat**
+   - All workers start the next rollout with the same fresh parameters.
+
+Key difference vs 8.2:
+- Same on-policy logic, but larger, more stable batches from parallel environments.
+- Cost: faster workers can idle at the barrier waiting for slow workers.
+
+### 8.4 Asynchronous Parallel (A3C-style)
+
+Detailed timeline on the same trajectory:
+
+1. **Start from global params**
+   - Worker A pulls `theta_k` and begins collecting our shared trajectory.
+   - Worker B also pulls `theta_k` but in a different environment instance.
+
+2. **No barrier; workers update independently**
+   - Worker B finishes first, computes gradients, and applies them to global weights.
+   - Global model is now closer to `theta_{k+1}`.
+
+3. **Worker A is now stale**
+   - Worker A is still finishing rollout produced under old `theta_k`.
+   - It computes advantages from that rollout (including `[-0.3,-0.1,+2.0]` for our shared path).
+
+4. **Stale gradient applied to newer global model**
+   - Worker A pushes gradient to global parameters that already changed.
+   - So gradient was computed at old policy but applied at newer policy.
+
+5. **Pull-latest and continue**
+   - Worker A refreshes local weights and starts next rollout.
+
+Why it behaves differently:
+- Throughput is high because no waiting.
+- Bias appears from policy lag (stale gradients), which can hurt stability if lag is large.
+
+### 8.5 Online-Batch (PPO/A2C practical loop)
+
+This is the common deep RL production pattern: online data collection, but SGD in mini-batches.
+
+Why it can look similar to 8.3:
+- Both often collect `K*T` on-policy transitions from parallel environments.
+- Both can pause collection, compute advantages, then update parameters.
+
+Core distinction:
+- **8.3 (sync parallel)** describes a **systems topology**: workers are synchronized by a barrier and produce one aligned batch snapshot.
+- **8.5 (online-batch)** describes an **optimization protocol**: what you do with a collected rollout buffer (mini-batches, number of epochs, clipping, normalization).
+
+When they are effectively the same:
+- If you do synchronized collection and then only one full-batch update (`1` epoch, no mini-batch reuse), 8.5 almost collapses to 8.3 behavior.
+
+When they differ in practice (most PPO code):
+- 8.3-style collection is used, but 8.5 optimization performs multiple SGD epochs over the same rollout.
+- So one rollout can drive many optimizer steps before recollection.
+- This improves hardware efficiency and learning speed, but pushes data farther from perfectly on-policy as epochs increase.
+
+Detailed workflow:
+
+1. **Rollout phase (online)**
+   - Run `K` environments with current `theta_k`.
+   - Store transitions in a short-lived rollout buffer until size `K*T`.
+   - Our shared 3-step trajectory is one slice inside this rollout buffer.
+
+2. **Freeze rollout and compute training signals**
+   - Compute `y_t`, `Ahat_t`, returns (often with GAE).
+   - Optionally normalize advantages across the whole rollout buffer.
+
+3. **Optimization phase (batch SGD)**
+   - Shuffle rollout buffer into mini-batches.
+   - Run several epochs over the same collected data (for PPO, usually clipped objective).
+   - Our shared trajectory can be reused multiple optimizer passes in this phase.
+
+4. **Clear rollout buffer and recollect**
+   - After fixed epochs, discard this rollout data.
+   - Continue stepping env with updated policy and build the next on-policy batch.
+
+Why it works well:
+- More stable than pure step-wise online updates.
+- Better hardware utilization via matrix mini-batches.
+- Still near on-policy because data lifetime is short.
+
+Concrete contrast on our shared trajectory:
+- In 8.3, Worker 1's `[-0.3,-0.1,+2.0]` usually contributes once in one synchronized update.
+- In 8.5 (PPO-style), the same three samples may be revisited across multiple mini-batches/epochs before being dropped.
+
+### 8.6 Off-Policy with Replay Buffer (SAC/TD3-style)
+
+Now behavior policy and update policy are different:
+
+- Behavior policy that generated stored data: `mu`
+- Current policy being optimized: `pi_theta`
+- Replay stores: `(s,a,r,s',d)` and optionally behavior log-prob `log mu(a|s)`
+
+Per update:
+
+1. **Interact and store**
+   - Environment step is generated by behavior policy `mu` (could be old actor + exploration noise).
+   - Push transition tuple to replay.
+   - Our shared trajectory transitions become replay rows that may be sampled many times later.
+
+2. **Sample random mini-batch from replay**
+   - Batch can contain very old and very new transitions.
+   - This breaks temporal correlation and increases sample reuse.
+
+3. **Critic target uses next action from current/target policy**, not necessarily stored action:
+$$
+y = r + \gamma Q_{\text{target}}(s', a'),\quad a' \sim \pi_{\text{target}}(\cdot\mid s')
+$$
+   - For our shared transition `(s1,a1,r2,s2)`, stored `a1` came from old `mu`, but target uses `a'` drawn from *current* target policy at `s2`.
+
+4. **Critic update**
+   - Regress `Q_\phi(s,a)` toward `y` on sampled replay actions `a`.
+   - This learns from historical behavior while tracking current policy value.
+
+5. **Actor update uses current policy actions on sampled states**
+$$
+J_{\text{actor}}(\theta)=\mathbb{E}_{s\sim D}\left[Q_\phi\!\left(s,\pi_\theta(s)\right)\right]
+$$
+   - States come from replay; actions are regenerated by current actor.
+   - This avoids direct dependence on old behavior action probabilities in many implementations.
+
+6. **Target-network update**
+   - Soft update target critics (and target actor in TD3/DDPG) for stability.
+
+How policy change affects target/action:
+- Stored action `a` was from old `mu`; target action `a'` is from new/target policy.
+- So target value tracks *current* policy improvement, while still reusing old states/transitions.
+
+Action-space note:
+- Discrete stochastic: expectation/sampling over action probabilities.
+- Continuous stochastic (e.g., SAC): sample `a'` from Gaussian policy.
+- Continuous deterministic (DDPG/TD3): `a' = pi_target(s')`.
+
+If you explicitly reuse behavior action in policy gradient form, you need correction ratios like:
+$$
+\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\mu(a_t \mid s_t)}
+$$
+but many modern off-policy actor-critic methods avoid direct importance-weighted log-prob gradients by using the Q-maximization actor objective above.
+
+### 8.7 Offline Actor-Critic (fixed dataset)
+
+Detailed workflow:
+
+1. **Freeze dataset**
+   - No simulator interaction during training.
+   - Dataset `D_offline` is fixed before optimization starts.
+   - Our shared trajectory appears as static rows in this dataset.
+
+2. **Offline mini-batch sampling**
+   - Every gradient step samples only from `D_offline`.
+   - Same rows can be replayed many times across epochs.
+
+3. **Critic training (off-policy)**
+   - Similar Bellman-style targets as replay methods.
+   - But because we cannot collect corrective data, extrapolation error is dangerous.
+
+4. **Conservative / behavior-regularized actor training**
+   - Penalize actions far from dataset support, or regularize toward behavior policy.
+   - Goal: prevent actor from exploiting critic errors on unseen actions.
+
+5. **Iterate until convergence; deploy carefully**
+   - Validation is typically done with held-out offline metrics and cautious online testing.
+
+How shared example is used:
+- It keeps reappearing during training because data is fixed.
+- Main failure mode is OOD action overestimation: critic assigns high values to actions not supported by dataset.
+
+---
+
+### 8.8 Control Variates, N-step, and GAE on This Same Trajectory
+
+#### A) Control Variates (Baselines)
+
+Without baseline (REINFORCE-style weights): use `G_t` directly:
+- weights: `[5.23, 4.7, 3.0]`
+
+With state baseline `V(s_t)`, use advantage `G_t - V(s_t)`:
+- weights: `[1.23, 1.7, 2.0]`
+
+Interpretation:
+- Mean shift removed, variance reduced, gradient direction kept unbiased for state-only baseline.
+
+#### B) N-step Returns from `t=0`
+
+1-step advantage:
+$$
+\hat{A}^{(1)}_0 = r_1 + \gamma V(s_1) - V(s_0) = 1 + 0.9\cdot 3 - 4 = -0.3
+$$
+
+2-step advantage:
+$$
+\hat{A}^{(2)}_0 = r_1 + \gamma r_2 + \gamma^2 V(s_2) - V(s_0)
+= 1 + 0.9\cdot 2 + 0.9^2\cdot 1 - 4 = -0.39
+$$
+
+3-step (MC) advantage:
+$$
+\hat{A}^{(3)}_0 = G_0 - V(s_0) = 5.23 - 4 = 1.23
+$$
+
+Interpretation:
+- Small `n`: more bootstrap bias, lower variance.
+- Large `n`: less bootstrap bias, more sample variance.
+
+#### C) GAE on the same deltas
+
+TD deltas:
+$$
+\delta_0=-0.3,\quad \delta_1=-0.1,\quad \delta_2=2.0
+$$
+
+GAE at `t=0`:
+$$
+\hat{A}^{GAE}_0(\lambda)=\delta_0+\gamma\lambda\delta_1+(\gamma\lambda)^2\delta_2
+$$
+
+Examples:
+- `lambda = 0`: $\hat{A}^{GAE}_0 = -0.3$ (pure TD(0)-like)
+- `lambda = 0.95`: $\hat{A}^{GAE}_0 \approx 1.0766$
+- `lambda = 1`: $\hat{A}^{GAE}_0 = -0.3 + 0.9(-0.1) + 0.9^2(2.0) = 1.23$ (MC-like)
+
+Interpretation:
+- `lambda` smoothly moves from low-variance TD to high-fidelity Monte Carlo.
+
+### 8.9 Final Comparison Table
+
+| Method | Uses fresh policy data only? | Reuses old data? | Main practical trade-off |
+|---|---|---|---|
+| On-policy batch | Yes | No (or very limited) | Stable but sample-hungry |
+| Sync parallel | Yes (per synchronized batch) | Limited | Stable, but worker idle time |
+| Async parallel | Mostly, but can be stale | Limited | Higher throughput, policy-lag bias |
+| Off-policy replay | No | Yes (high reuse) | Efficient, but target/replay tuning critical |
+| Offline actor-critic | No interaction | Yes (fixed only) | OOD extrapolation risk |
