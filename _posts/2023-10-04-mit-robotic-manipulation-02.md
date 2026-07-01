@@ -2,7 +2,7 @@
 layout: post
 title: Robot Hardware
 subtitle: Lecture 2 Robot Hardware
-categories: Robotic
+categories: Robotics
 tags: [MIT-Robotic-Manipulation-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---

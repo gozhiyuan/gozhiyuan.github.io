@@ -2,7 +2,7 @@
 layout: post
 title: Robot Basic Pick and Place II - Differential kinematics
 subtitle: Lecture 3 Basic Pick and Place (Pt. 1)
-categories: Robotic
+categories: Robotics
 tags: [MIT-Robotic-Manipulation-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---

@@ -2,8 +2,8 @@
 layout: post
 title: The Three Eras of Robot Learning
 subtitle: A decade of progress in models, data, and world models
-categories: Robotics Robot-Learning Foundation-Models
-tags: [Robotics, VLA, World-Models, Reinforcement-Learning]
+categories: Robotics VLA World-Models
+tags: [YouTube]
 banner: "/assets/images/banners/yuanpang-wa-iceburg2.jpg"
 ---
 

@@ -2,7 +2,7 @@
 layout: post
 title: Anatomy of a Manipulation System
 subtitle: Lecture 1 Introduction
-categories: Robotic
+categories: Robotics
 tags: [MIT-Robotic-Manipulation-2023]
 banner: "/assets/images/banners/yuanpang-wa-valley.jpg"
 ---
