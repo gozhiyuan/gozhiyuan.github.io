@@ -110,11 +110,82 @@ The core issue is the **memory bottleneck**: compute capabilities scale faster t
 Instead of storing intermediate activations (which is memory-intensive), one can recompute them on the fly. This "trades compute which you have too much of for memory bandwidth which you had too little of." This is the same principle as gradient checkpointing.
 
 #### 2.1.5 Coalescing Memory Accesses
-Global memory is read in "burst mode."
+Coalescing is a **global-memory access** concept. In CUDA terms, global memory is the large address space that all blocks can address; on a typical NVIDIA GPU, its backing store is off-chip **HBM**, which is a kind of DRAM. It is large but expensive to access.
+
+Do not confuse that with on-chip SRAM:
+
+| Memory | What it is | Scope |
+| --- | --- | --- |
+| HBM / global memory | Large, off-chip GPU DRAM | All blocks can address it |
+| L2 cache | Hardware-managed on-chip SRAM cache | Shared across the GPU |
+| L1 cache | Hardware-managed on-chip SRAM cache | Near one SM |
+| Shared memory | Programmer-managed on-chip SRAM | Threads in one block |
+| Registers | Fastest on-chip storage | One thread |
+
+A global-memory load can be satisfied from L1 or L2 when data is cached, but the access pattern is still a global-memory pattern. Shared memory has a different concern—**bank conflicts**—rather than coalescing.
+
+NVIDIA executes threads in a warp of 32 threads. At one global-memory load instruction, those 32 threads (also called lanes) present their addresses together. The hardware can combine nearby addresses into a small number of memory transactions:
+
+~~~text
+Good: contiguous floats in one warp
+
+T0 → x[0]    T1 → x[1]    ...    T31 → x[31]
+~~~
+
+For **float**, each thread requests 4 bytes. The warp therefore collectively covers a nearby 128-byte span. On modern NVIDIA GPUs that span is generally serviced using several adjacent 32-byte sectors; the useful mental model is simply “few transactions for one nearby span.”
+
+~~~text
+Bad: scattered floats in one warp
+
+T0 → x[0]    T1 → x[1024]    ...    T31 → x[31744]
+~~~
+
+The bad pattern touches many separate memory regions, so it needs many more transactions and wastes bandwidth. Coalescing does **not** mean all threads read the same float. The usual ideal is that they read different, adjacent values. Reading the same address can be efficient through broadcast/cache behavior, but it is not the main coalescing pattern.
+
+For a simple vector-add kernel, consecutive thread indices naturally create a coalesced pattern:
+
+~~~cpp
+int i = blockIdx.x * blockDim.x + threadIdx.x;
+if (i < n) y[i] = x[i];
+~~~
+
+Within a warp, this commonly becomes **x[0..31]**, then **x[32..63]**, then **x[64..95]** in element indices. Since each float is 4 bytes, those are byte spans **0..127**, **128..255**, and **256..383**.
+
 > "Memory accesses are coalesced if all the threads (in a warp) fall within the same burst."
-If threads in a warp access contiguous memory locations, the hardware can fetch much more data in a single operation, effectively increasing memory throughput.
+
+The matrix diagram below is easier to read if we focus on the warp *at one load iteration*, rather than the path followed by an individual thread over time. The four threads shown are a simplified warp.
+
+For a row-major matrix:
+
+~~~text
+M[row, col] = M[row * WIDTH + col]
+~~~
+
+The left, **not coalesced**, arrangement assigns neighboring threads to different rows. At iteration **k**:
+
+~~~text
+T0 → M[0, k]
+T1 → M[1, k]
+T2 → M[2, k]
+T3 → M[3, k]
+~~~
+
+Those addresses are separated by **WIDTH** in row-major storage. Each lane may walk left-to-right across its own row over time, but the lanes access far-apart locations at the same instant.
+
+The right, **coalesced**, arrangement assigns neighboring threads to neighboring columns. At iteration **k**:
+
+~~~text
+T0 → M[k, 0]
+T1 → M[k, 1]
+T2 → M[k, 2]
+T3 → M[k, 3]
+~~~
+
+Those values are adjacent in a row-major array. The next iteration reads **M[k + 1, 0..3]**. Thus, each individual thread moves down a fixed column over time, but at every individual load instruction the threads collectively read a contiguous row slice. That is why the diagram says the second arrangement reads the entire vector at each step.
 
 ![alt_text](/assets/images/llm-from-scratch/05/4.png "image_tooltip")
+
+Coalescing makes each trip to HBM efficient. **Tiling**, discussed next, solves the complementary problem: it loads data into shared memory once and reuses it many times before another HBM trip is needed.
 
 #### 2.1.6 Tiling (The Big One)
 Tiling is the practice of "grouping and ordering threads to minimize global memory access." It's a crucial technique to overcome the memory bottleneck.
