@@ -195,17 +195,106 @@ Tiling is the practice of "grouping and ordering threads to minimize global memo
 
 **The Core Idea of Tiling:**
 - Break down a large computation (like a matrix multiplication) into smaller, manageable "tiles."
-- Load these tiles into the GPU's fast shared memory.
+- Load one current pair of input tiles into the block's fast shared memory.
 - Perform a significant amount of computation on the tile data before writing the final results back to slow global memory.
 
-**Tiling for Matrix Multiplication: An Example**
-- **Problem with Naive Matrix Multiplication:** Each input element might be read multiple times from global memory, and memory access might not be coalesced.
-- **How Tiling Improves It:**
-    1.  **Cut into Tiles:** Large matrices are logically cut into smaller sub-matrices.
-    2.  **Load to Shared Memory:** Tiles are loaded into the fast shared memory of an SM.
-    3.  **Compute in Phases:** Partial sums for the output matrix are computed using the tiles in shared memory.
-    4.  **Reuse Data:** Repeated reads for computations within a tile now access the fast shared memory, not global memory.
-    5.  **Coalesced Access:** Loading an entire tile can be done with coalesced memory access, further speeding up the initial load.
+**Tiling for Matrix Multiplication: A Worked Example**
+
+The full A and B matrices begin in HBM/global memory. A thread block owns a small output tile of C; it does **not** copy all of A and B into shared memory. Shared memory is far too small. Instead, the block repeatedly loads one current A/B pair along the inner **K** dimension, uses that pair completely, and overwrites it with the next pair.
+
+For a deliberately tiny example, let a block of four threads compute a 2×2 tile of C from a 2×4 A and a 4×2 B:
+
+~~~text
+A =                         B =
+
+[a00 a01 | a02 a03]         [b00 b01]
+[a10 a11 | a12 a13]         [b10 b11]
+                            ---------
+                            [b20 b21]
+                            [b30 b31]
+~~~
+
+The block owns these four outputs:
+
+~~~text
+T(0,0) → C00     T(0,1) → C01
+T(1,0) → C10     T(1,1) → C11
+~~~
+
+Each thread has a private register accumulator, initially zero. The block then runs an outer **K-tile loop** with a tile size of two.
+
+**K tile 0: K indices 0 and 1**
+
+The same four threads cooperatively load one A tile and one B tile from HBM into shared memory:
+
+~~~text
+shared_A =               shared_B =
+
+[a00 a01]                [b00 b01]
+[a10 a11]                [b10 b11]
+~~~
+
+Conceptually, T(0,0) loads a00 and b00, T(0,1) loads a01 and b01, and so on. In a real, larger tile these global-memory loads are arranged so neighboring threads load neighboring addresses, making the HBM transfer coalesced.
+
+The block synchronizes so every shared-memory value is ready. Then the same threads consume that shared tile together:
+
+~~~text
+T(0,0): acc00 += a00×b00 + a01×b10
+T(0,1): acc01 += a00×b01 + a01×b11
+T(1,0): acc10 += a10×b00 + a11×b10
+T(1,1): acc11 += a10×b01 + a11×b11
+~~~
+
+This is the reuse: a00 was fetched from HBM once, then read from shared memory by both T(0,0) and T(0,1). Likewise, b00 is reused by T(0,0) and T(1,0). A 16×16 output tile gives roughly 16-way reuse of the appropriate A and B values.
+
+At this point, the first pair is no longer needed for this block's C tile. Its contribution is already stored in the four register accumulators:
+
+~~~text
+acc00 = a00×b00 + a01×b10
+acc01 = a00×b01 + a01×b11
+acc10 = a10×b00 + a11×b10
+acc11 = a10×b01 + a11×b11
+~~~
+
+**K tile 1: K indices 2 and 3**
+
+After a second synchronization, the block overwrites shared memory with the next pair:
+
+~~~text
+shared_A =               shared_B =
+
+[a02 a03]                [b20 b21]
+[a12 a13]                [b30 b31]
+~~~
+
+The same four threads add the new contribution into the same register accumulators:
+
+~~~text
+T(0,0): acc00 += a02×b20 + a03×b30
+T(0,1): acc01 += a02×b21 + a03×b31
+T(1,0): acc10 += a12×b20 + a13×b30
+T(1,1): acc11 += a12×b21 + a13×b31
+~~~
+
+The accumulator for C00 is now complete:
+
+~~~text
+C00 = a00×b00 + a01×b10 + a02×b20 + a03×b30
+~~~
+
+Only after every K tile has been processed does each thread write its one final C value to HBM/global memory.
+
+The essential loop is therefore:
+
+~~~text
+load one current A/B K-tile pair from HBM → shared memory
+→ synchronize
+→ every output thread reuses the pair and updates its register accumulator
+→ synchronize
+→ overwrite shared memory with the next pair
+~~~
+
+The naive alternative is correct but repeatedly reads duplicate data from HBM: T(0,0) and T(0,1) would both individually load a00. Tiling loads a00 once per block into shared memory, then lets both threads reuse it. Different blocks may still need the same A tile because shared memory is private to one block; L2 cache may help, but blocks cannot directly share their shared-memory tiles.
 
 **Advantages of Tiling:**
 - **⬇️ Reduced Global Memory Access:** The primary benefit.
