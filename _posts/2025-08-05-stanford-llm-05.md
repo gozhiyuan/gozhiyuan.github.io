@@ -147,6 +147,24 @@ Tiling is the practice of "grouping and ordering threads to minimize global memo
 - **Memory Alignment and Padding:** If matrix dimensions are not multiples of the memory burst size, padding might be needed to avoid performance degradation.
 - **Implementation Complexity:** Tiled algorithms are more complex to implement than naive approaches.
 
+#### Thread tiles and block tiles: one useful distinction
+
+A tile can be owned at two levels. A **block tile** is shared work: threads in
+one block cooperatively load an A/B region from global memory into shared
+memory, then reuse it across those threads. A **thread tile** is private work:
+one thread keeps several output accumulators and small input fragments in its
+registers, reusing them to calculate a small V × V output region. High
+performance matrix kernels normally combine both levels:
+
+~~~text
+global memory → shared-memory tile reused by a block → register tile reused by one thread
+~~~
+
+The synchronization barrier protects only the cooperating threads in one block;
+it neither combines results nor synchronizes independent blocks. For a
+small-matrix walkthrough, CUDA code, and the exact load/barrier sequence, see
+[DLSys GPU Acceleration: thread and block tiling](https://gozhiyuan.github.io/deep-learning-systems/gpu-acceleration/2022/10/30/cmu-dlsys-12.html#thread-level-and-block-level-tiling-a-small-worked-example).
+
 ### 2.2. Matrix Mystery: Why Bigger Matrices and Specific Sizes are Faster
 ![alt_text](/assets/images/llm-from-scratch/05/8.png "image_tooltip")
 The "unpredictable looking wavelike patterns" in GPU performance for matrix multiplications can be explained by:
