@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">CPU-to-GPU KV-cache mapping</title>
+  <desc id="desc">The BlockManager assigns a Sequence block table. ModelRunner copies it and slot mappings to the GPU, where attention uses them to write and read the global KV cache.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#3b4a5a"/></marker>
+    <style>
+      .box { stroke:#3b4a5a; stroke-width:2; rx:12; }
+      .t { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .s { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .e { fill:none; stroke:#3b4a5a; stroke-width:2.3; marker-end:url(#arrow); }
+      .cache { stroke:#376db0; stroke-width:1.5; }
+    </style>
+  </defs>
+  <rect width="1200" height="430" fill="#f8fbff"/>
+  <text x="600" y="38" class="t" font-size="24">From a logical request to physical KV-cache pages</text>
+  <text x="225" y="84" class="s">CPU control plane</text><text x="856" y="84" class="s">GPU data plane</text>
+  <rect x="46" y="128" width="185" height="88" class="box" fill="#fff5db"/>
+  <text x="139" y="162" class="t">BlockManager</text><text x="139" y="187" class="s">allocates IDs + refcounts</text>
+  <rect x="300" y="128" width="214" height="88" class="box" fill="#e8f1ff"/>
+  <text x="407" y="159" class="t">Sequence.block_table</text><text x="407" y="187" class="s">Python list: [0, 3, 4]</text>
+  <rect x="586" y="112" width="206" height="64" class="box" fill="#efeaff"/>
+  <text x="689" y="142" class="t">GPU block_tables</text><text x="689" y="162" class="s">int32 batch tensor</text>
+  <rect x="586" y="220" width="206" height="64" class="box" fill="#efeaff"/>
+  <text x="689" y="250" class="t">GPU slot_mapping</text><text x="689" y="270" class="s">exact write slots</text>
+  <rect x="864" y="166" width="144" height="86" class="box" fill="#e4f7f0"/>
+  <text x="936" y="199" class="t">Attention</text><text x="936" y="222" class="s">FlashAttention +</text><text x="936" y="241" class="s">store_kvcache</text>
+  <rect x="1052" y="107" width="106" height="205" class="box" fill="#e8f1ff"/>
+  <text x="1105" y="139" class="t">Global</text><text x="1105" y="161" class="t">KV cache</text>
+  <rect x="1072" y="181" width="66" height="30" class="cache" fill="#b8d5fb"/><text x="1105" y="202" class="s">block 0</text>
+  <rect x="1072" y="218" width="66" height="30" class="cache" fill="#b8d5fb"/><text x="1105" y="239" class="s">block 3</text>
+  <rect x="1072" y="255" width="66" height="30" class="cache" fill="#b8d5fb"/><text x="1105" y="276" class="s">block 4</text>
+  <path d="M231 172 H300" class="e"/><path d="M514 157 H586" class="e"/><path d="M514 195 C550 230 545 251 586 252" class="e"/>
+  <path d="M792 144 C832 152 826 183 864 190" class="e"/><path d="M792 252 C832 245 829 230 864 222" class="e"/>
+  <path d="M1008 189 H1052" class="e"/><path d="M1052 277 C1017 283 1010 271 1008 250" class="e"/>
+  <text x="1027" y="342" class="s">Each physical ID identifies a page across every transformer's K/V layer slice.</text>
+</svg>

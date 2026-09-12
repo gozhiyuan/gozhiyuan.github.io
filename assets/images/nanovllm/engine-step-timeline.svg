@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="590" viewBox="0 0 1400 590" role="img" aria-labelledby="title desc">
+ <title id="title">One nano-vLLM engine step for prefill and decode</title><desc id="desc">A sequence diagram showing CPU scheduler, rank zero model runner, worker runners, and GPU model execution for a single engine step. It highlights the differences between a prefill and a decode batch and shows where postprocessing changes sequence state.</desc>
+ <defs><style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#17243a}.title{font-size:22px;font-weight:700}.label{font-size:16px;font-weight:650}.small{font-size:13px;fill:#42526b}.lane{stroke:#aab5c7;stroke-dasharray:6 6;stroke-width:2}.arr{stroke:#5d6d88;stroke-width:2.5;fill:none;marker-end:url(#h)}.green{fill:#e8f8ed;stroke:#3c9860;stroke-width:2}.blue{fill:#eaf2ff;stroke:#4d79d8;stroke-width:2}.yellow{fill:#fff4da;stroke:#c38416;stroke-width:2}.red{fill:#fff0ef;stroke:#c64b4b;stroke-width:2}</style><marker id="h" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8z" fill="#5d6d88"/></marker></defs>
+ <rect width="1400" height="590" rx="18" fill="#fbfcfe"/><text x="42" y="43" class="title">One engine step: scheduling and postprocessing are CPU state changes; all ranks execute the selected GPU batch</text>
+ <text x="130" y="88" class="label">Scheduler / BlockManager</text><text x="545" y="88" class="label">Rank 0 ModelRunner</text><text x="900" y="88" class="label">Worker rank(s)</text><text x="1182" y="88" class="label">GPU model shards</text>
+ <line x1="240" y1="105" x2="240" y2="555" class="lane"/><line x1="660" y1="105" x2="660" y2="555" class="lane"/><line x1="1015" y1="105" x2="1015" y2="555" class="lane"/><line x1="1260" y1="105" x2="1260" y2="555" class="lane"/>
+ <rect x="70" y="125" width="300" height="65" rx="10" class="green"/><text x="95" y="153" class="label">1. schedule()</text><text x="95" y="175" class="small">select prefill batch first, or decode batch</text>
+ <path d="M370 157 H655" class="arr"/><text x="415" y="142" class="small">seqs, is_prefill</text>
+ <rect x="500" y="210" width="290" height="75" rx="10" class="blue"/><text x="525" y="240" class="label">2. call("run", seqs, mode)</text><text x="525" y="263" class="small">write pickle payload; signal Events</text>
+ <path d="M790 247 H1010" class="arr"/><text x="835" y="231" class="small">shared-memory control message</text>
+ <rect x="850" y="305" width="300" height="68" rx="10" class="blue"/><text x="873" y="334" class="label">3. each rank prepares inputs</text><text x="873" y="357" class="small">same sequence metadata → local GPU tensors</text>
+ <path d="M1150 339 H1255" class="arr"/>
+ <rect x="1100" y="397" width="280" height="78" rx="10" class="yellow"/><text x="1125" y="426" class="label">4. run model collectively</text><text x="1125" y="449" class="small">prefill: packed new tokens; decode: one</text><text x="1125" y="469" class="small">last token per selected sequence</text>
+ <path d="M1260 476 C1260 517 660 517 660 476" class="arr"/><text x="835" y="542" class="small">rank 0 gathers logits, samples token IDs; workers return None</text>
+ <path d="M660 475 C660 500 240 500 240 475" class="arr"/>
+ <rect x="70" y="430" width="300" height="65" rx="10" class="red"/><text x="95" y="458" class="label">5. postprocess()</text><text x="95" y="480" class="small">hash blocks, append token, finish/free or continue</text>
+ <rect x="395" y="112" width="125" height="70" rx="10" fill="#f7f8fb" stroke="#8390a5" stroke-width="2"/><text x="414" y="140" class="small">Prefill state</text><text x="405" y="162" class="small">waiting → running</text>
+ <rect x="395" y="392" width="125" height="70" rx="10" fill="#f7f8fb" stroke="#8390a5" stroke-width="2"/><text x="414" y="420" class="small">Decode state</text><text x="405" y="442" class="small">running → running</text>
+</svg>

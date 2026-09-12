@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
+  <title id="title">nano-vLLM custom Qwen3 model and checkpoint-loading path</title>
+  <desc id="desc">A Hugging Face Qwen3 config and safetensors checkpoint feed a custom nano-vLLM Qwen3 model. Separate checkpoint projections are packed into fused, tensor-parallel modules.</desc>
+  <defs><style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#18253d}.title{font-weight:700;font-size:22px}.label{font-weight:650;font-size:16px}.small{font-size:14px;fill:#42526b}.box{stroke-width:2}.arrow{stroke:#5b6b87;stroke-width:2.5;fill:none;marker-end:url(#head)}</style><marker id="head" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8z" fill="#5b6b87"/></marker></defs>
+  <rect width="1200" height="500" rx="18" fill="#f8fafc"/>
+  <text x="48" y="52" class="title">The checkpoint contract and the execution contract are different</text>
+  <rect x="50" y="105" width="250" height="270" rx="14" fill="#eaf2ff" stroke="#4f7bd9" class="box"/>
+  <text x="75" y="145" class="label">Hugging Face repository</text><text x="75" y="180" class="small">config.json → Qwen3Config</text><text x="75" y="215" class="small">safetensors weights</text><text x="75" y="255" class="small">q_proj, k_proj, v_proj</text><text x="75" y="282" class="small">gate_proj, up_proj</text><text x="75" y="330" class="small">standard checkpoint names</text>
+  <path d="M305 240 H430" class="arrow"/><text x="326" y="215" class="small">load_model()</text>
+  <rect x="440" y="100" width="310" height="280" rx="14" fill="#fff5df" stroke="#d79525" class="box"/>
+  <text x="465" y="140" class="label">Packing + sharding loader</text><text x="465" y="180" class="small">packed_modules_mapping</text><text x="465" y="215" class="small">q/k/v → qkv_proj slices</text><text x="465" y="245" class="small">gate/up → gate_up_proj slices</text><text x="465" y="285" class="small">each rank narrows its own</text><text x="465" y="312" class="small">checkpoint shard into local weight</text><text x="465" y="348" class="small">not merely a key rename</text>
+  <path d="M755 240 H870" class="arrow"/>
+  <rect x="880" y="70" width="270" height="350" rx="14" fill="#e9f8ef" stroke="#3d9a63" class="box"/>
+  <text x="905" y="110" class="label">Custom Qwen3ForCausalLM</text><text x="905" y="153" class="small">VocabParallelEmbedding</text><text x="905" y="187" class="small">N × DecoderLayer</text><text x="925" y="215" class="small">RMSNorm · QKV parallel</text><text x="925" y="241" class="small">RoPE · FlashAttention</text><text x="925" y="267" class="small">SwiGLU MLP</text><text x="905" y="310" class="small">RMSNorm → ParallelLMHead</text><text x="905" y="352" class="small">same model semantics; execution</text><text x="905" y="378" class="small">layout tuned for this engine</text>
+  <text x="50" y="455" class="small">Config supplies architecture hyperparameters; safetensors supplies learned values. nano-vLLM builds its own PyTorch module tree rather than calling Transformers' Qwen3 forward pass.</text>
+</svg>

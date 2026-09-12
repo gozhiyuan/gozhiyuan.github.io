@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">nano-vLLM request lifecycle</title>
+  <desc id="desc">A request moves from waiting through prefill and running through decode until completion. Incomplete prefill returns to waiting and unfinished decode returns to running.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#3b4a5a"/></marker>
+    <style>
+      .node { stroke:#3b4a5a; stroke-width:2; rx:12; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .edge { fill:none; stroke:#3b4a5a; stroke-width:2.3; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="360" fill="#f8fbff"/>
+  <text x="600" y="38" class="label" font-size="24">One request through nano-vLLM</text>
+  <rect x="38" y="134" width="144" height="74" class="node" fill="#e8f1ff"/>
+  <text x="110" y="165" class="label">New prompt</text><text x="110" y="188" class="small">create Sequence</text>
+  <rect x="248" y="134" width="152" height="74" class="node" fill="#fff5db"/>
+  <text x="324" y="165" class="label">waiting</text><text x="324" y="188" class="small">prompt not cached</text>
+  <rect x="467" y="134" width="154" height="74" class="node" fill="#e4f7f0"/>
+  <text x="544" y="165" class="label">GPU prefill</text><text x="544" y="188" class="small">write prompt K/V</text>
+  <rect x="688" y="134" width="152" height="74" class="node" fill="#efeaff"/>
+  <text x="764" y="165" class="label">running</text><text x="764" y="188" class="small">completion active</text>
+  <rect x="907" y="134" width="154" height="74" class="node" fill="#e4f7f0"/>
+  <text x="984" y="165" class="label">GPU decode</text><text x="984" y="188" class="small">one token / request</text>
+  <rect x="1072" y="250" width="108" height="66" class="node" fill="#e8f1ff"/>
+  <text x="1126" y="278" class="label">finished</text><text x="1126" y="299" class="small">free IDs</text>
+  <path d="M182 171 H248" class="edge"/><path d="M400 171 H467" class="edge"/><path d="M621 171 H688" class="edge"/><path d="M840 171 H907" class="edge"/>
+  <path d="M544 134 V86 H324 V134" class="edge"/><text x="434" y="78" class="small">more prompt chunks</text>
+  <path d="M984 134 V86 H764 V134" class="edge"/><text x="874" y="78" class="small">more completion tokens</text>
+  <path d="M1061 196 C1110 202 1126 220 1126 250" class="edge"/><text x="1104" y="224" class="small">EOS / max tokens</text>
+</svg>

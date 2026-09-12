@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="600" viewBox="0 0 1400 600" role="img" aria-labelledby="title desc">
+ <title id="title">nano-vLLM compared with vLLM V1 architecture</title><desc id="desc">A comparison diagram showing nano-vLLM's offline main process and tensor-parallel workers alongside vLLM V1's API servers, Engine Core, GPU workers, and optional data-parallel coordinator.</desc>
+ <defs><style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#17243a}.title{font-size:22px;font-weight:700}.label{font-size:17px;font-weight:650}.small{font-size:13px;fill:#42526b}.box{stroke-width:2}.arr{stroke:#61718b;stroke-width:2.5;fill:none;marker-end:url(#h)}.nano{fill:#eaf2ff;stroke:#4d79d8}.vllm{fill:#e8f8ed;stroke:#3c9860}.note{fill:#fff4da;stroke:#c38416}</style><marker id="h" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8z" fill="#61718b"/></marker></defs>
+ <rect width="1400" height="600" rx="18" fill="#fbfcfe"/><text x="42" y="43" class="title">The architectural gap: nano-vLLM teaches the core; vLLM V1 adds a serving and execution platform around it</text>
+ <rect x="45" y="80" width="580" height="450" rx="16" fill="#f7faff" stroke="#4d79d8" class="box"/><text x="70" y="115" class="label">nano-vLLM (this series)</text><text x="70" y="140" class="small">one offline Python caller; Qwen3-only teaching engine</text>
+ <rect x="90" y="180" width="190" height="78" rx="10" class="nano"/><text x="112" y="211" class="label">LLMEngine</text><text x="109" y="235" class="small">tokenizer + scheduler</text>
+ <rect x="90" y="330" width="190" height="78" rx="10" class="nano"/><text x="110" y="361" class="label">BlockManager</text><text x="111" y="385" class="small">prefix/KV metadata</text>
+ <rect x="370" y="180" width="200" height="78" rx="10" class="nano"/><text x="397" y="211" class="label">rank 0 runner</text><text x="391" y="235" class="small">sampler + control</text>
+ <rect x="370" y="330" width="200" height="78" rx="10" class="nano"/><text x="392" y="361" class="label">TP workers</text><text x="391" y="385" class="small">shared memory + NCCL</text>
+ <path d="M280 219 H368" class="arr"/><path d="M185 258 V328" class="arr"/><path d="M470 258 V328" class="arr"/>
+ <text x="90" y="465" class="small">No HTTP API, external admission, cancellation,</text><text x="90" y="487" class="small">data/pipeline parallelism, or production observability.</text>
+ <rect x="775" y="80" width="580" height="450" rx="16" fill="#f8fdf9" stroke="#3c9860" class="box"/><text x="800" y="115" class="label">vLLM V1 (official architecture)</text><text x="800" y="140" class="small">online serving and scalable execution processes</text>
+ <rect x="815" y="178" width="160" height="75" rx="10" class="vllm"/><text x="839" y="207" class="label">API server(s)</text><text x="833" y="231" class="small">HTTP, tokenization, stream</text>
+ <rect x="1000" y="178" width="155" height="75" rx="10" class="vllm"/><text x="1024" y="207" class="label">Engine Core</text><text x="1021" y="231" class="small">schedule + KV manager</text>
+ <rect x="1180" y="178" width="135" height="75" rx="10" class="vllm"/><text x="1200" y="207" class="label">GPU workers</text><text x="1202" y="231" class="small">TP × PP per DP</text>
+ <path d="M975 215 H998" class="arr"/><path d="M1155 215 H1178" class="arr"/>
+ <rect x="1000" y="330" width="155" height="75" rx="10" class="note"/><text x="1022" y="359" class="label">DP coordinator</text><text x="1020" y="383" class="small">only when DP &gt; 1</text><path d="M1077 253 V328" class="arr"/>
+ <text x="815" y="465" class="small">ZMQ process boundaries; online requests; broader model,</text><text x="815" y="487" class="small">parallelism, cache, sampling, metrics, and fault-tolerance surfaces.</text>
+ <text x="45" y="570" class="small">This is a scope comparison, not a like-for-like performance chart. The official vLLM docs call the current core architecture V1; V0 is being deprecated.</text>
+</svg>

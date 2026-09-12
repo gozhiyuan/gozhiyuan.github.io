@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" role="img" aria-labelledby="title desc">
+  <title id="title">Tensor-parallel control and data flow</title>
+  <desc id="desc">Rank zero pickles the run command and sequence metadata in shared host memory, signals a worker, both ranks execute model shards and NCCL collectives, and rank zero samples gathered logits.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#3b4a5a"/></marker>
+    <style>
+      .lane { fill:#eef5ff; stroke:#9ab8da; stroke-width:1.5; }
+      .mem { fill:#fff5db; stroke:#b78a32; stroke-width:1.8; rx:12; }
+      .gpu { fill:#e4f7f0; stroke:#39856e; stroke-width:1.8; rx:12; }
+      .t { fill:#132238; font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .s { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .e { fill:none; stroke:#3b4a5a; stroke-width:2.2; marker-end:url(#arrow); }
+      .d { fill:none; stroke:#3b4a5a; stroke-width:2.2; stroke-dasharray:7 6; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="470" fill="#f8fbff"/>
+  <text x="600" y="38" class="t" font-size="24">One tensor-parallel `run` call</text>
+  <rect x="48" y="78" width="310" height="342" class="lane" rx="16"/><text x="203" y="110" class="t">rank 0 / GPU 0</text>
+  <rect x="842" y="78" width="310" height="342" class="lane" rx="16"/><text x="997" y="110" class="t">worker rank 1 / GPU 1</text>
+  <rect x="454" y="126" width="292" height="74" class="mem"/><text x="600" y="157" class="t">shared host memory</text><text x="600" y="180" class="s">pickle: method name + seq metadata</text>
+  <rect x="91" y="254" width="224" height="82" class="gpu"/><text x="203" y="287" class="t">local model shard</text><text x="203" y="311" class="s">prepare inputs + forward</text>
+  <rect x="885" y="254" width="224" height="82" class="gpu"/><text x="997" y="287" class="t">local model shard</text><text x="997" y="311" class="s">prepare inputs + forward</text>
+  <path d="M358 150 H454" class="e"/><text x="406" y="140" class="s">write</text>
+  <path d="M746 177 H842" class="e"/><text x="794" y="167" class="s">Event.set + read</text>
+  <path d="M203 118 V254" class="e"/><path d="M997 118 V254" class="e"/>
+  <path d="M315 295 H885" class="d"/><path d="M885 315 H315" class="d"/><text x="600" y="278" class="s">NCCL collectives: tensor-parallel layer communication</text>
+  <rect x="109" y="360" width="188" height="40" class="mem"/><text x="203" y="386" class="t">gather logits + sample</text>
+  <path d="M203 336 V360" class="e"/><path d="M997 336 C997 374 760 379 297 379" class="e"/>
+  <text x="600" y="447" class="s">Shared memory coordinates CPU processes; NCCL moves GPU tensors. This is tensor parallelism, not data parallelism.</text>
+</svg>
