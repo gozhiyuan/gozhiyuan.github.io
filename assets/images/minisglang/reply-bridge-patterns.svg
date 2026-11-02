@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Four ways to deliver an asynchronous reply</title>
+  <desc id="desc">After PyZMQ has delivered a reply into the frontend process, four rows compare a Future for one result, an asyncio Queue for a stream, a callback for immediate event handling, and Mini-SGLang's list plus Event mailbox-and-doorbell bridge. A lower note contrasts direct ZMQ request/reply.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2; rx:13; }
+      .title { fill:#132238; font:600 24px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .left { fill:#132238; font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.3; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="720" fill="#f8fbff"/>
+  <text x="800" y="42" class="title">After a reply arrives: which local Python code should receive it?</text>
+  <text x="800" y="71" class="small">PyZMQ delivers `UserReply` across processes first. These four choices run inside the frontend process; a coroutine is an `async def` function paused at `await`.</text>
+
+  <text x="55" y="126" class="left">One result: Future</text>
+  <rect x="305" y="92" width="270" height="72" class="box" fill="#e8f1ff"/><text x="440" y="121" class="label">Producer resolves once</text><text x="440" y="146" class="mono">future.set_result(answer)</text>
+  <rect x="700" y="92" width="270" height="72" class="box" fill="#e4f7f0"/><text x="835" y="121" class="label">Coroutine wakes once</text><text x="835" y="146" class="mono">answer = await future</text>
+  <rect x="1095" y="92" width="370" height="72" class="box" fill="#fff3d9"/><text x="1280" y="121" class="label">Example: one database/RPC result</text><text x="1280" y="146" class="small">return one JSON response</text>
+  <path d="M575 128 H700" class="edge"/><path d="M970 128 H1095" class="edge"/>
+
+  <text x="55" y="266" class="left">Ordered stream: Queue</text>
+  <rect x="305" y="232" width="270" height="72" class="box" fill="#e8f1ff"/><text x="440" y="261" class="label">Producer adds chunks</text><text x="440" y="286" class="mono">await queue.put(&quot;hello&quot;)</text>
+  <rect x="700" y="232" width="270" height="72" class="box" fill="#e4f7f0"/><text x="835" y="261" class="label">Coroutine takes chunks</text><text x="835" y="286" class="mono">chunk = await queue.get()</text>
+  <rect x="1095" y="232" width="370" height="72" class="box" fill="#fff3d9"/><text x="1280" y="261" class="label">Example: WebSocket or token stream</text><text x="1280" y="286" class="small">yield each item in arrival order</text>
+  <path d="M575 268 H700" class="edge"/><path d="M970 268 H1095" class="edge"/>
+
+  <text x="55" y="406" class="left">Immediate reaction: callback</text>
+  <rect x="305" y="372" width="270" height="72" class="box" fill="#e8f1ff"/><text x="440" y="401" class="label">Event dispatcher</text><text x="440" y="426" class="mono">callbacks[42](reply)</text>
+  <rect x="700" y="372" width="270" height="72" class="box" fill="#ece7ff"/><text x="835" y="401" class="label">Handler runs now</text><text x="835" y="426" class="mono">update_ui(reply)</text>
+  <rect x="1095" y="372" width="370" height="72" class="box" fill="#fff3d9"/><text x="1280" y="401" class="label">Example: GUI button or telemetry</text><text x="1280" y="426" class="small">react without a waiting coroutine</text>
+  <path d="M575 408 H700" class="edge"/><path d="M970 408 H1095" class="edge"/>
+
+  <text x="55" y="546" class="left">Mini-SGLang: mailbox + doorbell</text>
+  <rect x="305" y="512" width="270" height="72" class="box" fill="#e8f1ff"/><text x="440" y="541" class="label">Listener stores replies</text><text x="440" y="566" class="mono">ack_map[42].append(reply)</text>
+  <rect x="700" y="512" width="270" height="72" class="box" fill="#e4f7f0"/><text x="835" y="541" class="label">Listener rings Event</text><text x="835" y="566" class="mono">event_map[42].set()</text>
+  <rect x="1095" y="512" width="370" height="72" class="box" fill="#ece7ff"/><text x="1280" y="541" class="label">SSE coroutine wakes and drains</text><text x="1280" y="566" class="mono">await event.wait(); drain list</text>
+  <path d="M575 548 H700" class="edge"/><path d="M970 548 H1095" class="edge"/>
+
+  <rect x="55" y="630" width="1490" height="54" rx="12" fill="#eef3f7" stroke="#c6d3df" stroke-width="1.4"/>
+  <text x="800" y="653" class="label">PyZMQ `REQ/REP` is a different, cross-process transport shape: one client sends, then waits for one reply before sending again.</text>
+  <text x="800" y="674" class="small">It fits a short RPC, but not Mini-SGLang's multi-stage, multi-token streaming pipeline.</text>
+</svg>

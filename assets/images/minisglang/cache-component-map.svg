@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang KV cache address map</title>
+  <desc id="desc">A general view of Mini-SGLang cache ownership. TableManager provides a request row and its token and page-table tensors. CacheManager allocates pages and updates the page table. RadixPrefixCache matches CPU token keys to GPU physical-slot IDs and protects reusable prefixes. The Engine owns the actual rank-local K/V tensors in GPU HBM.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L0,8 L11,4 z" fill="#31465a"/></marker>
+    <marker id="greenArrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L0,8 L11,4 z" fill="#28785a"/></marker>
+    <style>
+      .title{fill:#132238;font:700 32px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .sub{fill:#4c6074;font:18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .head{fill:#132238;font:700 22px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .txt{fill:#31465a;font:16px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .mono{fill:#24394d;font:16px ui-monospace,SFMono-Regular,Menlo,monospace;text-anchor:middle}
+      .mono.left{text-anchor:start}
+      .small{fill:#4c6074;font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .tag{fill:#236b4f;font:700 15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+      .box{stroke:#31465a;stroke-width:2;rx:14}
+      .line{fill:none;stroke:#31465a;stroke-width:2.5;marker-end:url(#arrow)}
+      .gline{fill:none;stroke:#28785a;stroke-width:2.5;marker-end:url(#greenArrow)}
+      .dash{fill:none;stroke:#64798d;stroke-width:2;stroke-dasharray:8 7;marker-end:url(#arrow)}
+      .cell{stroke:#31465a;stroke-width:1.5;rx:6}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#f8fbff"/>
+  <text x="800" y="48" class="title">Mini-SGLang KV cache: who owns what?</text>
+  <text x="800" y="80" class="sub">Metadata finds and protects addresses; the Engine's GPU pool holds the actual K/V values</text>
+
+  <!-- Scheduler-process control objects -->
+  <rect x="38" y="112" width="1524" height="245" rx="18" fill="#f0f4f8" stroke="#c6d3df" stroke-width="1.5"/>
+  <text x="66" y="145" class="tag">SCHEDULER PROCESS · PYTHON CONTROL OBJECTS IN HOST RAM</text>
+
+  <rect x="68" y="170" width="430" height="153" class="box" fill="#e8f1ff"/>
+  <text x="283" y="205" class="head">TableManager</text>
+  <text x="283" y="238" class="txt">allocates a request row r</text>
+  <text x="283" y="269" class="txt">tracks reusable row IDs</text>
+  <text x="283" y="299" class="small">token_pool[r] and page_table[r] are device tensors ↓</text>
+
+  <rect x="584" y="170" width="430" height="153" class="box" fill="#e4f7f0"/>
+  <text x="799" y="205" class="head">CacheManager</text>
+  <text x="799" y="238" class="txt">matches · locks · allocates pages</text>
+  <text x="799" y="269" class="txt">writes slot IDs into the request row</text>
+  <text x="799" y="299" class="small">free_slots stores available page bases on device ↓</text>
+
+  <rect x="1100" y="170" width="430" height="153" class="box" fill="#ece7ff"/>
+  <text x="1315" y="205" class="head">RadixPrefixCache</text>
+  <text x="1315" y="238" class="txt">indexes exact token prefixes</text>
+  <text x="1315" y="269" class="txt">handles + refcounts protect live paths</text>
+  <text x="1315" y="299" class="small">CPU tree/key metadata; node slot-ID values below ↓</text>
+
+  <path d="M498 246 H584" class="line"/><text x="541" y="228" class="small">row request</text>
+  <path d="M1014 246 H1100" class="line"/><text x="1057" y="228" class="small">prefix match / insert</text>
+
+  <!-- Device state -->
+  <rect x="38" y="388" width="1524" height="542" rx="18" fill="#eaf2fb" stroke="#91aac2" stroke-width="2"/>
+  <text x="66" y="425" class="tag">ONE TP RANK r · CUDA DEVICE MEMORY / GPU HBM</text>
+
+  <!-- Address tables -->
+  <rect x="68" y="453" width="600" height="278" class="box" fill="#ffffff"/>
+  <text x="368" y="489" class="head">Request row r: two different arrays</text>
+  <text x="368" y="521" class="small">logical sequence position</text>
+  <g class="small"><text x="278" y="550">0</text><text x="360" y="550">1</text><text x="442" y="550">2</text><text x="524" y="550">3</text></g>
+  <text x="97" y="588" class="mono left">token_pool[r]</text>
+  <g><rect x="244" y="561" width="68" height="42" class="cell" fill="#e8f1ff"/><rect x="326" y="561" width="68" height="42" class="cell" fill="#e8f1ff"/><rect x="408" y="561" width="68" height="42" class="cell" fill="#e8f1ff"/><rect x="490" y="561" width="68" height="42" class="cell" fill="#e8f1ff"/>
+    <text x="278" y="589" class="mono">t0</text><text x="360" y="589" class="mono">t1</text><text x="442" y="589" class="mono">t2</text><text x="524" y="589" class="mono">t3</text></g>
+  <text x="97" y="659" class="mono left">page_table[r]</text>
+  <g><rect x="244" y="632" width="68" height="42" class="cell" fill="#dceaff"/><rect x="326" y="632" width="68" height="42" class="cell" fill="#dceaff"/><rect x="408" y="632" width="68" height="42" class="cell" fill="#cce9d8"/><rect x="490" y="632" width="68" height="42" class="cell" fill="#cce9d8"/>
+    <text x="278" y="660" class="mono">s0</text><text x="360" y="660" class="mono">s1</text><text x="442" y="660" class="mono">s6</text><text x="524" y="660" class="mono">s7</text></g>
+  <text x="368" y="707" class="small">logical position → physical K/V slot (not token ID → slot)</text>
+
+  <!-- Radix edge and device values -->
+  <rect x="708" y="453" width="410" height="278" class="box" fill="#ffffff"/>
+  <text x="913" y="489" class="head">Radix edge: paired key and value</text>
+  <text x="913" y="530" class="small">CPU token-key tensor</text>
+  <rect x="754" y="544" width="318" height="49" class="cell" fill="#ece7ff"/>
+  <text x="913" y="576" class="mono">_key = [t0, t1, t2, t3]</text>
+  <text x="913" y="625" class="small">GPU slot-ID tensor</text>
+  <rect x="754" y="639" width="318" height="49" class="cell" fill="#dceaff"/>
+  <text x="913" y="671" class="mono">_value = [s0, s1, s6, s7]</text>
+  <text x="913" y="713" class="small">same index means same token position</text>
+
+  <!-- Actual K/V pool -->
+  <rect x="1158" y="453" width="372" height="376" class="box" fill="#fffaf7"/>
+  <text x="1344" y="489" class="head">Engine MHAKVCache</text>
+  <text x="1344" y="521" class="small">actual attention K/V tensors</text>
+  <text x="1344" y="550" class="mono">per layer · per local KV head</text>
+  <rect x="1200" y="581" width="288" height="54" class="cell" fill="#dceaff"/><text x="1344" y="615" class="mono">slot s0 · K and V</text>
+  <rect x="1200" y="647" width="288" height="54" class="cell" fill="#dceaff"/><text x="1344" y="681" class="mono">slot s1 · K and V</text>
+  <rect x="1200" y="713" width="288" height="54" class="cell" fill="#cce9d8"/><text x="1344" y="747" class="mono">slots s6, s7 · K and V</text>
+  <text x="1344" y="806" class="small">separate local shard in each TP rank's HBM</text>
+
+  <!-- Arrows describe index/address flow, not tensor copies -->
+  <path d="M1315 323 C1315 375 990 366 990 445" class="dash"/>
+  <path d="M754 663 L676 653" class="gline"/>
+  <path d="M668 681 C680 812 1110 812 1150 780" class="line"/>
+
+  <!-- Legend -->
+  <rect x="68" y="852" width="1462" height="50" rx="10" fill="#f8fbff" stroke="#c6d3df" stroke-width="1.5"/>
+  <text x="799" y="884" class="txt">token t = content · row r = request · position = sequence offset · slot s = physical K/V address</text>
+</svg>

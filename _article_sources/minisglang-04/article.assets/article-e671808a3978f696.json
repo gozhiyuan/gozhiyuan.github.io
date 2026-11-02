@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "title": "Mini-SGLang Part 4: Inside the Engine\u2014Attention, CUDA Graphs, and Tensor Parallelism",
+  "question": "How does a prepared batch produce the next token through attention, graph replay, tensor parallelism and token feedback?",
+  "audience": "Python/ML engineer following Parts 1\u20133",
+  "scope": "Dense Qwen3, FlashInfer, greedy TP1 golden path; TP2 extension, two decode steps; bounded full-SGLang configuration comparison.",
+  "source": {
+    "url": "https://github.com/sgl-project/mini-sglang",
+    "commit": "9a91cfafe754aa85daee49998176275667eb58f2"
+  },
+  "assumptions": [
+    "Token IDs, dimensions, addresses, logits choices and sample IDs are illustrative, not model outputs.",
+    "Allocator page size2; FlashInfer internal page view1.",
+    "D256,Hq4,Hkv2,d64,I512,V64,L2; output allowance4.",
+    "Full SGLang comparison source f825d729363136a2d4a4b330fa694d0b37a878fa, configuration entry points only.",
+    "Five usable allocator pages, unlike Part3 four-page pressure example; extra page8,9 supplies two decode slots; maxseq10 allows output allowance4."
+  ],
+  "claims": [
+    {
+      "id": "scheduler_forward",
+      "statement": "GPU input gather and sampled-token feedback are logical token_pool operations.",
+      "sources": [
+        {
+          "file": "python/minisgl/scheduler/scheduler.py",
+          "symbol": "Scheduler._forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "qwen_layer",
+      "statement": "Qwen3 carries x and residual separately across attention and MLP.",
+      "sources": [
+        {
+          "file": "python/minisgl/models/qwen3.py",
+          "symbol": "Qwen3DecoderLayer.forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "attention_layer",
+      "statement": "Q/K head normalization precedes RoPE and backend attention.",
+      "sources": [
+        {
+          "file": "python/minisgl/layers/attention.py",
+          "symbol": "AttentionLayer.forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "fi_forward",
+      "statement": "FlashInfer stores current K/V before running attention on the cache.",
+      "sources": [
+        {
+          "file": "python/minisgl/attention/fi.py",
+          "symbol": "FlashInferBackend.forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "lm_head",
+      "statement": "Prefill selects the last query row per real request before vocabulary projection.",
+      "sources": [
+        {
+          "file": "python/minisgl/layers/embedding.py",
+          "symbol": "ParallelLMHead.forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "engine_forward",
+      "statement": "Model execution precedes request-counter advance, sampling, host copy and copy event.",
+      "sources": [
+        {
+          "file": "python/minisgl/engine/engine.py",
+          "symbol": "Engine.forward_batch"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "graph_replay",
+      "statement": "Replay copies stable input buffers and prepares backend metadata, then returns only real rows.",
+      "sources": [
+        {
+          "file": "python/minisgl/engine/graph.py",
+          "symbol": "GraphRunner.replay"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "oproj",
+      "statement": "The attention output projection all-reduces partial output contributions under TP.",
+      "sources": [
+        {
+          "file": "python/minisgl/layers/linear.py",
+          "symbol": "LinearOProj.forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "process_last",
+      "statement": "CPU result handling synchronizes the copy event before reading host token IDs.",
+      "sources": [
+        {
+          "file": "python/minisgl/scheduler/scheduler.py",
+          "symbol": "Scheduler._process_last_data"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "fi_metadata",
+      "statement": "FlashInfer interprets the allocator cache as one-token pages and uses cumulative query/KV lengths.",
+      "sources": [
+        {
+          "file": "python/minisgl/attention/fi.py",
+          "symbol": "FlashInferBackend.prepare_metadata"
+        },
+        {
+          "file": "python/minisgl/attention/fi.py",
+          "symbol": "FlashInferBackend._initialize_metadata_once"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "kv_layout",
+      "statement": "Cache storage has separate K/V and layer axes, plus physical pages, slots, local KV heads and head width.",
+      "sources": [
+        {
+          "file": "python/minisgl/kvcache/mha_pool.py",
+          "symbol": "MHAKVCache.__init__"
+        },
+        {
+          "file": "python/minisgl/kvcache/mha_pool.py",
+          "symbol": "MHAKVCache.store_kv"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "graph_capture",
+      "statement": "Graphs capture model forward and logits buffer writes for padded decode buckets; the Engine reserves a dummy page.",
+      "sources": [
+        {
+          "file": "python/minisgl/engine/graph.py",
+          "symbol": "GraphRunner._capture_graphs"
+        },
+        {
+          "file": "python/minisgl/engine/graph.py",
+          "symbol": "GraphRunner.pad_batch"
+        },
+        {
+          "file": "python/minisgl/engine/engine.py",
+          "symbol": "Engine.__init__"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "sample",
+      "statement": "All-greedy uses argmax; non-all-greedy prepares temperature/top-k/top-p probability sampling.",
+      "sources": [
+        {
+          "file": "python/minisgl/engine/sample.py",
+          "symbol": "Sampler.sample"
+        },
+        {
+          "file": "python/minisgl/engine/sample.py",
+          "symbol": "Sampler.prepare"
+        },
+        {
+          "file": "python/minisgl/engine/sample.py",
+          "symbol": "sample_impl"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "weights",
+      "statement": "Weights are sharded and merged, with replicated KV heads when TP exceeds KV heads in supported arrangements.",
+      "sources": [
+        {
+          "file": "python/minisgl/models/weight.py",
+          "symbol": "_shard_tensor"
+        },
+        {
+          "file": "python/minisgl/models/weight.py",
+          "symbol": "load_weight"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "rotary",
+      "statement": "RoPE uses explicit absolute positions and restricts supported head sizes.",
+      "sources": [
+        {
+          "file": "python/minisgl/layers/rotary.py",
+          "symbol": "RotaryEmbedding.__init__"
+        },
+        {
+          "file": "python/minisgl/layers/rotary.py",
+          "symbol": "RotaryEmbedding.forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "residual",
+      "statement": "Residual addition is fused into normalization when a residual is present.",
+      "sources": [
+        {
+          "file": "python/minisgl/layers/norm.py",
+          "symbol": "RMSNormFused.forward"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "mlp",
+      "statement": "Merged gate/up activation multiplies the activated gate by up, then applies a row-parallel down projection.",
+      "sources": [
+        {
+          "file": "python/minisgl/models/utils.py",
+          "symbol": "GatedMLP.forward"
+        },
+        {
+          "file": "python/minisgl/layers/activation.py",
+          "symbol": "silu_and_mul"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    },
+    {
+      "id": "backend_switch",
+      "statement": "Hardware predicates select auto backends; explicit comma-separated values select prefill/decode backends.",
+      "sources": [
+        {
+          "file": "python/minisgl/engine/engine.py",
+          "symbol": "_adjust_config"
+        },
+        {
+          "file": "python/minisgl/attention/__init__.py",
+          "symbol": "create_attention_backend"
+        }
+      ],
+      "evidence_status": "source-reviewed"
+    }
+  ],
+  "figures": [
+    {
+      "id": "qwen3",
+      "asset": "assets/engine-qwen3-shapes.svg",
+      "caption": "Packed suffix rows through Qwen3 with shapes and residual.",
+      "claim_ids": [
+        "qwen_layer",
+        "attention_layer",
+        "lm_head",
+        "residual",
+        "mlp"
+      ],
+      "evidence_status": "illustrative"
+    },
+    {
+      "id": "cache",
+      "asset": "assets/engine-kv-trace.svg",
+      "caption": "Token, position and slot maps with causal query visibility.",
+      "claim_ids": [
+        "fi_forward",
+        "fi_metadata",
+        "kv_layout"
+      ],
+      "evidence_status": "illustrative"
+    },
+    {
+      "id": "graphs",
+      "asset": "assets/engine-graph-contract.svg",
+      "caption": "Bucket padding, stable inputs, backend updates and sampling after replay.",
+      "claim_ids": [
+        "graph_capture",
+        "graph_replay",
+        "engine_forward"
+      ],
+      "evidence_status": "illustrative"
+    }
+  ],
+  "uncertainties": [
+    "No CUDA, attention, model, graph or multi-GPU execution was performed.",
+    "Stochastic TP sampling agreement is not verified; no token broadcast in inspected Engine/Sampler path.",
+    "No direct regression coverage established for graph parity, prefix-hit attention, overlap ordering or TP output agreement."
+  ],
+  "checks": [
+    {
+      "command": "PYTHONPATH=python python assets/check_core.py (run from source repo; script path resolved to retained artifact)",
+      "outcome": "passed",
+      "boundary": "Actual minisgl.core host-side contracts only, Python3.10.18 torch2.7.1 CPU; output assets/check_core.txt"
+    }
+  ]
+}

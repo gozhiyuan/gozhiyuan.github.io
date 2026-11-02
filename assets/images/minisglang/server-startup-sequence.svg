@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 680" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang server startup sequence</title>
+  <desc id="desc">The parent process parses command-line arguments, creates frontend queues, spawns tensor-parallel scheduler and tokenizer workers, waits for readiness acknowledgements, and only then starts Uvicorn. Scheduler workers initialize distributed communication, the model, KV cache, page tables, attention, sampling, and CUDA graphs before rank zero acknowledges readiness.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#bd6417"/></marker>
+    <style>
+      .lane { fill:#f4f8fc; stroke:#c7d5e1; stroke-width:1.8; rx:16; }
+      .box { stroke:#31465a; stroke-width:2.2; rx:13; }
+      .title { fill:#132238; font:600 24px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .lane-label { fill:#31465a; font:600 16px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.4; marker-end:url(#arrow); }
+      .edge-orange { fill:none; stroke:#bd6417; stroke-width:2.4; marker-end:url(#arrow-orange); }
+      .dash { fill:none; stroke:#7890a4; stroke-width:2; stroke-dasharray:7 6; }
+    </style>
+  </defs>
+  <rect width="1600" height="680" fill="#f8fbff"/>
+  <text x="800" y="43" class="title" font-size="27">Startup happens before the first request</text>
+
+  <rect x="32" y="84" width="1536" height="184" class="lane"/>
+  <text x="58" y="119" class="lane-label">Parent process</text>
+  <text x="58" y="141" class="lane-label">(frontend)</text>
+  <rect x="240" y="126" width="225" height="96" class="box" fill="#fff3d9"/>
+  <text x="352" y="159" class="label">1. parse arguments</text><text x="352" y="184" class="small">`ServerArgs` + TP template</text><text x="352" y="205" class="small">no CUDA/model yet</text>
+  <rect x="548" y="126" width="225" height="96" class="box" fill="#e8f1ff"/>
+  <text x="660" y="159" class="label">2. create frontend</text><text x="660" y="184" class="small">FastAPI state + async</text><text x="660" y="205" class="small">ZMQ endpoints</text>
+  <rect x="856" y="126" width="225" height="96" class="box" fill="#e4f7f0"/>
+  <text x="968" y="159" class="label">3. spawn workers</text><text x="968" y="184" class="small">TP schedulers +</text><text x="968" y="205" class="small">tokenizer/detokenizer</text>
+  <rect x="1164" y="126" width="170" height="96" class="box" fill="#fff3d9"/>
+  <text x="1249" y="159" class="label">5. wait for</text><text x="1249" y="182" class="label">acknowledgements</text><text x="1249" y="205" class="small">do not serve yet</text>
+  <rect x="1402" y="126" width="132" height="96" class="box" fill="#e8f1ff"/>
+  <text x="1468" y="159" class="label">6. Uvicorn</text><text x="1468" y="184" class="small">listen on</text><text x="1468" y="205" class="small">HTTP port</text>
+  <path d="M465 174 H548" class="edge"/><path d="M773 174 H856" class="edge"/><path d="M1081 174 H1164" class="edge"/><path d="M1334 174 H1402" class="edge"/>
+
+  <rect x="32" y="306" width="1536" height="256" class="lane"/>
+  <text x="58" y="341" class="lane-label">Child processes</text>
+  <text x="58" y="363" class="lane-label">created by step 3</text>
+  <rect x="245" y="360" width="420" height="145" class="box" fill="#e4f7f0"/>
+  <text x="455" y="392" class="label">4a. TP scheduler workers</text>
+  <text x="455" y="418" class="small">rank 0: `cuda:0` · rank 1: `cuda:1` · …</text>
+  <text x="455" y="442" class="small">construct `Scheduler`, which constructs `Engine`</text>
+  <text x="455" y="466" class="small">Gloo/PyNCCL → model weights → KV cache → page table</text>
+  <text x="455" y="489" class="small">attention + sampler + CUDA graph capture</text>
+  <rect x="779" y="360" width="332" height="145" class="box" fill="#ece7ff"/>
+  <text x="945" y="392" class="label">4b. tokenizer worker</text>
+  <text x="945" y="418" class="small">load tokenizer</text>
+  <text x="945" y="442" class="small">bind input/output queues</text>
+  <text x="945" y="466" class="small">default: also detokenizes</text>
+  <text x="945" y="489" class="small">send readiness acknowledgement</text>
+  <rect x="1225" y="360" width="243" height="145" class="box" fill="#eef3f7"/>
+  <text x="1346" y="392" class="label">ready but idle</text>
+  <text x="1346" y="418" class="small">each scheduler calls</text>
+  <text x="1346" y="442" class="small">`run_forever()` and waits</text>
+  <text x="1346" y="466" class="small">for `UserMsg`</text>
+  <path d="M968 222 V300 H455 V360" class="edge"/>
+  <path d="M968 222 V300 H945 V360" class="edge"/>
+  <path d="M1111 432 H1225" class="edge"/>
+  <path d="M455 360 C455 304 1249 304 1249 222" class="edge-orange"/>
+  <path d="M945 360 C945 326 1249 326 1249 222" class="edge-orange"/>
+  <text x="823" y="290" class="small" fill="#a85716">rank 0 ack after TP barrier; worker ack</text>
+
+  <rect x="32" y="599" width="1536" height="49" rx="12" fill="#eef3f7" stroke="#c7d5e1"/>
+  <text x="800" y="629" class="small">The first client request enters only after step 6. It does not cause model loading or KV-cache allocation; those resources already exist on every GPU rank.</text>
+</svg>

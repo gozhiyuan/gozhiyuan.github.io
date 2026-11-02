@@ -1,0 +1,13 @@
+{
+  "post": "_posts/2026-11-01-minisglang-04.md",
+  "assets": [
+    "/assets/images/minisglang-04/engine-qwen3-shapes-a9f0a8917e5e.svg",
+    "/assets/images/minisglang-04/engine-kv-trace-b99f32cb9253.svg",
+    "/assets/images/minisglang-04/engine-graph-contract-d7fd83cb13ba.svg",
+    "/assets/data/minisglang-04/check_core-9eac0139c8be.py",
+    "/assets/data/minisglang-04/check_core-6515c2a6dde4.txt",
+    "/assets/data/minisglang-04/article-f81fc347be16.json"
+  ],
+  "profile": "yuanpang-blog",
+  "publication": "staged locally"
+}

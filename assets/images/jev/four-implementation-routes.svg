@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 590" role="img" aria-labelledby="title desc">
+  <title id="title">Four open paths to typed decisions</title>
+  <desc id="desc">The same state and question can be served by a frozen decoder with label-token logits, a trained decoder adapter and optional pointer head, an encoder and decision head, or a diffusion model with constrained final readout. These are implementation families, not Jev's disclosed internals.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#61748b"/></marker>
+    <style>
+      .title{font:700 26px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#132238;text-anchor:middle}
+      .head{font:700 19px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#132238}
+      .body{font:16px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#374c63}
+      .note{font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#566b80}
+      .line{stroke:#61748b;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="590" fill="#f8fbff"/>
+  <text x="600" y="44" class="title">One typed decision, four implementation paths</text>
+  <rect x="375" y="65" width="450" height="62" rx="12" fill="#e7f1ff" stroke="#91b7df"/>
+  <text x="600" y="90" class="head" text-anchor="middle">State + independent question + options</text>
+  <text x="600" y="113" class="note" text-anchor="middle">e.g. low grip → brake / coast / accelerate</text>
+  <path d="M600 127 V149 H155 V177 M600 149 H450 V177 M600 149 H745 V177 M600 149 H1040 V177" fill="none" stroke="#61748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <g transform="translate(24,177)">
+    <rect width="262" height="300" rx="16" fill="#e8f1ff" stroke="#91b7df"/>
+    <text x="20" y="34" class="head">A · Frozen decoder</text>
+    <text x="20" y="83" class="body">Prompt each question</text>
+    <text x="20" y="112" class="body">Read A/B/C token logits</text>
+    <text x="20" y="141" class="body">Softmax + map to values</text>
+    <path d="M20 162 H242" stroke="#adc9e8"/>
+    <text x="20" y="193" class="body">JEVfire · SemIf · Juan</text>
+    <text x="20" y="226" class="note">No weight training</text>
+    <text x="20" y="254" class="note">Label/token bias; calibrate</text>
+  </g>
+  <g transform="translate(320,177)">
+    <rect width="262" height="300" rx="16" fill="#e4f7f0" stroke="#89c6aa"/>
+    <text x="20" y="34" class="head">B · Trained decoder</text>
+    <text x="20" y="83" class="body">Adapt base representations</text>
+    <text x="20" y="112" class="body">Read pointer or token head</text>
+    <text x="20" y="141" class="body">Train on labeled choices</text>
+    <path d="M20 162 H242" stroke="#a9d9c4"/>
+    <text x="20" y="193" class="body">Kev · Nimble</text>
+    <text x="20" y="226" class="note">Kev: LoRA + pointer head</text>
+    <text x="20" y="254" class="note">Nimble: LoRA + token logits</text>
+  </g>
+  <g transform="translate(616,177)">
+    <rect width="262" height="300" rx="16" fill="#fff5db" stroke="#d8bb72"/>
+    <text x="20" y="34" class="head">C · Encoder + head</text>
+    <text x="20" y="83" class="body">Encode state + options</text>
+    <text x="20" y="112" class="body">Score option vectors</text>
+    <text x="20" y="141" class="body">Fit head and calibration</text>
+    <path d="M20 162 H242" stroke="#e2d09f"/>
+    <text x="20" y="193" class="body">Laya · Decision 1.0</text>
+    <text x="20" y="226" class="note">Compact, parallel readout</text>
+    <text x="20" y="254" class="note">Context budget matters</text>
+  </g>
+  <g transform="translate(912,177)">
+    <rect width="262" height="300" rx="16" fill="#efeaff" stroke="#af9cd9"/>
+    <text x="20" y="34" class="head">D · Diffusion infill</text>
+    <text x="20" y="83" class="body">Fix common JSON tokens</text>
+    <text x="20" y="112" class="body">Refine open slots in parallel</text>
+    <text x="20" y="141" class="body">Constrain final readout</text>
+    <path d="M20 162 H242" stroke="#c8b9e6"/>
+    <text x="20" y="193" class="body">DiffusionGemma open-jev</text>
+    <text x="20" y="226" class="note">Steps / sequential control</text>
+    <text x="20" y="254" class="note">Fields may influence others</text>
+  </g>
+  <rect x="198" y="510" width="804" height="52" rx="11" fill="#e8eef5"/>
+  <text x="600" y="532" class="body" text-anchor="middle">All four can emit typed answers; none discloses Jev's private architecture.</text>
+  <text x="600" y="552" class="note" text-anchor="middle">A and D can use existing weights. B and C usually require decision-specific training.</text>
+</svg>

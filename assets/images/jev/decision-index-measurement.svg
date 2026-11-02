@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" role="img" aria-labelledby="title desc">
+  <title id="title">How to read the Decision Index comparison</title>
+  <desc id="desc">The frozen suite contains 132422 requests over 37 benchmarks. Nineteen static benchmarks contribute to the headline index through five equal-weight categories. Unanswered requests score zero. Calibration, coverage, and latency must be read separately; Jev is measured by hosted HTTP whereas open models run locally.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#43576e"/></marker>
+    <style>
+      .title{font:700 26px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#132238;text-anchor:middle}
+      .head{font:700 20px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#132238;text-anchor:middle}
+      .body{font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#45596e;text-anchor:middle}
+      .line{stroke:#43576e;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="480" fill="#f8fbff"/>
+  <text x="600" y="43" class="title">Reading a benchmark score as an engineering result</text>
+  <rect x="36" y="101" width="235" height="137" rx="13" fill="#e8f1ff" stroke="#91b7df"/>
+  <text x="154" y="140" class="head">132,422 requests</text>
+  <text x="154" y="172" class="body">37 frozen benchmarks</text>
+  <text x="154" y="199" class="body">same input suite per engine</text>
+  <rect x="332" y="101" width="235" height="137" rx="13" fill="#fff5db" stroke="#d8bb72"/>
+  <text x="449" y="140" class="head">19 scored tasks</text>
+  <text x="449" y="172" class="body">five capability areas</text>
+  <text x="449" y="199" class="body">other tasks displayed only</text>
+  <rect x="628" y="101" width="235" height="137" rx="13" fill="#e4f7f0" stroke="#89c6aa"/>
+  <text x="745" y="140" class="head">Coverage rule</text>
+  <text x="745" y="172" class="body">unsupported / error = 0</text>
+  <text x="745" y="199" class="body">do not skip hard requests</text>
+  <rect x="924" y="101" width="235" height="137" rx="13" fill="#efeaff" stroke="#af9cd9"/>
+  <text x="1041" y="140" class="head">Decision Index</text>
+  <text x="1041" y="172" class="body">equal mean of five areas</text>
+  <text x="1041" y="199" class="body">0–100; higher is better</text>
+  <path d="M271 169 H332 M567 169 H628 M863 169 H924" class="line"/>
+  <rect x="95" y="293" width="1010" height="130" rx="14" fill="#e8eef5" stroke="#c5d0dc"/>
+  <text x="600" y="326" class="head">Read the neighboring measurements before choosing a model</text>
+  <text x="600" y="359" class="body">Answered rate: can the engine handle long states and large menus?</text>
+  <text x="600" y="386" class="body">Calibration: does confidence predict success on this task?  Latency: local GPU vs remote HTTP is not matched.</text>
+</svg>

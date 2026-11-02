@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1650 760" role="img" aria-labelledby="title desc">
+  <title id="title">A locked prefix stays safe while an unshared leaf can be evicted for decode</title>
+  <desc id="desc">Request A leaves a six-token cached path. Request B locks the four-token shared prefix and adds a two-token branch. The A-only leaf remains evictable; when B needs another page for decode, CacheManager evicts that oldest eligible leaf and reuses its slots.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box{stroke:#31465a;stroke-width:2;rx:12}.title{fill:#132238;font:600 26px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.label{fill:#132238;font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.small{fill:#4c6074;font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.mono{fill:#31465a;font:13px ui-monospace,SFMono-Regular,Menlo,monospace;text-anchor:middle}.edge{fill:none;stroke:#31465a;stroke-width:2.3;marker-end:url(#arrow)}.good{fill:#236b4f;font:600 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.warn{fill:#9a5a20;font:600 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+    </style>
+  </defs>
+  <rect width="1650" height="760" fill="#f8fbff"/>
+  <text x="825" y="42" class="title">Locking protects the shared path; eviction reclaims only unused leaves</text>
+  <text x="825" y="73" class="small">Toy pool: four pages × two token slots = eight slots. A uses three pages; B uses one new page for its prompt.</text>
+
+  <rect x="30" y="118" width="370" height="500" class="box" fill="#ffffff"/>
+  <text x="215" y="158" class="label">1 · A finishes</text>
+  <rect x="55" y="194" width="320" height="112" rx="10" fill="#d9eafa" stroke="#31465a"/>
+  <text x="215" y="228" class="mono">[10 11 | 20 21 | 30 31]</text>
+  <text x="215" y="256" class="mono">[ 0  1 |  2  3 |  4  5]</text>
+  <text x="215" y="286" class="small">one cached leaf · ref_count 0</text>
+  <rect x="65" y="345" width="300" height="96" rx="10" fill="#eef3f7" stroke="#c6d3df"/>
+  <text x="215" y="381" class="mono">free page base: 6</text>
+  <text x="215" y="411" class="small">slots [6,7] are still unallocated</text>
+  <text x="215" y="500" class="good">all six cached slots are evictable</text>
+
+  <rect x="430" y="118" width="370" height="500" class="box" fill="#ffffff"/>
+  <text x="615" y="158" class="label">2 · B matches and locks four</text>
+  <rect x="455" y="194" width="320" height="82" rx="10" fill="#b9dfcf" stroke="#31465a"/>
+  <text x="615" y="226" class="mono">shared [10 11 | 20 21]</text>
+  <text x="615" y="254" class="small">slots [0,1,2,3] · ref_count 1</text>
+  <rect x="455" y="294" width="320" height="72" rx="10" fill="#f5e6cf" stroke="#31465a"/>
+  <text x="615" y="325" class="mono">A leaf [30 31] → [4,5]</text>
+  <text x="615" y="351" class="small">ref_count 0 · evictable</text>
+  <text x="615" y="420" class="small">B's handle pins the matched path</text>
+  <text x="615" y="447" class="small">before its row copies slots [0–3].</text>
+  <rect x="470" y="492" width="290" height="60" rx="9" fill="#eef3f7" stroke="#c6d3df"/>
+  <text x="615" y="529" class="mono">available = A leaf 2 + free 2</text>
+
+  <rect x="830" y="118" width="370" height="500" class="box" fill="#ffffff"/>
+  <text x="1015" y="158" class="label">3 · B prefill adds its branch</text>
+  <rect x="855" y="194" width="320" height="82" rx="10" fill="#b9dfcf" stroke="#31465a"/>
+  <text x="1015" y="226" class="mono">shared [10 11 | 20 21]</text>
+  <text x="1015" y="254" class="small">ref_count 1 · protected</text>
+  <rect x="855" y="294" width="150" height="72" rx="10" fill="#f5e6cf" stroke="#31465a"/>
+  <text x="930" y="325" class="mono">A [30 31]</text>
+  <text x="930" y="351" class="small">ref 0</text>
+  <rect x="1020" y="294" width="155" height="72" rx="10" fill="#dcebd5" stroke="#31465a"/>
+  <text x="1097" y="325" class="mono">B [40 41]</text>
+  <text x="1097" y="351" class="small">ref 1</text>
+  <text x="1015" y="410" class="small">B holds shared + B-only nodes.</text>
+  <text x="1015" y="437" class="small">A-only page remains evictable.</text>
+  <rect x="870" y="492" width="290" height="60" rx="9" fill="#eef3f7" stroke="#c6d3df"/>
+  <text x="1015" y="529" class="mono">protected 6 · evictable 2 · free 0</text>
+
+  <rect x="1230" y="118" width="390" height="500" class="box" fill="#ffffff"/>
+  <text x="1425" y="158" class="label">4 · B needs a decode page</text>
+  <rect x="1260" y="194" width="330" height="82" rx="10" fill="#b9dfcf" stroke="#31465a"/>
+  <text x="1425" y="226" class="mono">shared prefix stays locked</text>
+  <text x="1425" y="254" class="small">B still owns this path</text>
+  <rect x="1260" y="294" width="330" height="78" rx="10" fill="#f5e6cf" stroke="#31465a"/>
+  <text x="1425" y="327" class="mono">evict A leaf [30 31] → [4,5]</text>
+  <text x="1425" y="355" class="small">oldest eligible leaf; two slots returned</text>
+  <path d="M1425 380 V421" class="edge"/>
+  <rect x="1260" y="421" width="330" height="78" rx="10" fill="#dcebd5" stroke="#31465a"/>
+  <text x="1425" y="454" class="mono">reuse page base 4 for B decode</text>
+  <text x="1425" y="482" class="small">B's next position now has a page</text>
+  <text x="1425" y="556" class="good">cached data yields to active work</text>
+
+  <path d="M400 378 H430" class="edge"/><path d="M800 378 H830" class="edge"/><path d="M1200 378 H1230" class="edge"/>
+  <rect x="65" y="657" width="1520" height="62" rx="11" fill="#eef3f7" stroke="#c6d3df"/>
+  <text x="825" y="684" class="small">A lock is a path reference count, not a mutex: a node is protected while ref_count &gt; 0. Eviction visits unprotected leaves, oldest timestamp first;</text>
+  <text x="825" y="706" class="small">it can reclaim a whole compressed edge, so the number of returned slots may exceed the immediate request.</text>
+</svg>

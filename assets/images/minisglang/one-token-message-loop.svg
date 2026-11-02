@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 870" role="img" aria-labelledby="title desc">
+  <title id="title">One Mini-SGLang request and one generated token travel through the message loop</title>
+  <desc id="desc">A numbered message flow shows the frontend PUSHing TokenizeMsg to a tokenizer worker PULL socket, the worker tokenizing on CPU and PUSHing UserMsg to scheduler rank zero, the GPU engine generating a token and PUSHing DetokenizeMsg to the worker, the worker detokenizing on CPU and PUSHing UserReply back to the frontend, and the frontend PULL listener waking the event and yielding an SSE fragment.</desc>
+  <defs>
+    <marker id="navy" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <marker id="orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#bd6417"/></marker>
+    <style>
+      .title { fill:#132238; font:600 26px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .note { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#navy); }
+      .edge-orange { fill:none; stroke:#bd6417; stroke-width:2.8; marker-end:url(#orange); }
+      .num { fill:#bd6417; font:700 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+    </style>
+  </defs>
+  <rect width="1600" height="870" fill="#f8fbff"/>
+  <text x="800" y="44" class="title">One request and one generated token: the complete message loop</text>
+
+  <rect x="55" y="100" width="320" height="168" class="box" fill="#e8f1ff"/>
+  <text x="215" y="136" class="label">Frontend process</text><text x="215" y="162" class="small">FastAPI route: uid=42</text><text x="215" y="185" class="small">async PUSH TokenizeMsg</text><text x="215" y="208" class="small">returns StreamingResponse</text><text x="215" y="232" class="small">stream waits on event_map[42]</text>
+
+  <rect x="610" y="100" width="380" height="168" class="box" fill="#fff3d9"/>
+  <text x="800" y="136" class="label">Pre-started tokenizer worker process</text><text x="800" y="162" class="small">blocking PULL recv(): sleeps until a message arrives</text><text x="800" y="185" class="small">wakes → CPU text-to-token conversion</text><text x="800" y="208" class="small">sync PUSH UserMsg(uid=42, input_ids)</text><text x="800" y="232" class="small">one worker handles tokenizer + detokenizer by default</text>
+
+  <rect x="1185" y="100" width="360" height="168" class="box" fill="#e4f7f0"/>
+  <text x="1365" y="136" class="label">Scheduler rank 0 + engine</text><text x="1365" y="162" class="small">admit request and build batch</text><text x="1365" y="185" class="small">GPU forward pass + sampler</text><text x="1365" y="208" class="small">sample next_token</text><text x="1365" y="232" class="small">PUSH DetokenizeMsg(uid=42, token)</text>
+
+  <path d="M375 184 H610" class="edge-orange"/>
+  <text x="493" y="163" class="num">1</text><text x="493" y="215" class="small" fill="#a85716">ZMQ IPC: TokenizeMsg(42)</text>
+  <path d="M990 184 H1185" class="edge-orange"/>
+  <text x="1087" y="163" class="num">2</text><text x="1087" y="215" class="small" fill="#a85716">ZMQ: UserMsg(42, input_ids)</text>
+
+  <rect x="610" y="404" width="380" height="157" class="box" fill="#ece7ff"/>
+  <text x="800" y="440" class="label">Same worker: detokenize branch</text><text x="800" y="466" class="small">blocking PULL wakes for DetokenizeMsg</text><text x="800" y="489" class="small">CPU token-to-text conversion</text><text x="800" y="512" class="small">sync PUSH UserReply(uid=42, " hello")</text><text x="800" y="535" class="small">then repeats for the next generated token</text>
+  <path d="M1365 268 V334 H800 V404" class="edge-orange"/>
+  <text x="1083" y="320" class="num">3</text><text x="1083" y="348" class="small" fill="#a85716">ZMQ: DetokenizeMsg(42, next_token)</text>
+
+  <rect x="55" y="649" width="320" height="157" class="box" fill="#e8f1ff"/>
+  <text x="215" y="685" class="label">Frontend listener + SSE</text><text x="215" y="711" class="small">async PULL wakes for UserReply</text><text x="215" y="734" class="small">ack_map[42].append(reply)</text><text x="215" y="757" class="small">event_map[42].set()</text><text x="215" y="780" class="small">SSE generator yields text to client</text>
+  <path d="M610 482 H492 V727 H375" class="edge-orange"/>
+  <text x="492" y="466" class="num">4</text><text x="492" y="505" class="small" fill="#a85716">ZMQ IPC: UserReply(42, text, finished)</text>
+  <path d="M215 649 V571 H470 V232 H375" class="edge"/>
+  <text x="470" y="557" class="num">5</text><text x="470" y="584" class="small">event wakes stream → SSE fragment</text>
+
+  <rect x="55" y="829" width="1490" height="1" fill="#c7d5e1"/>
+  <text x="800" y="856" class="small">No component polls every minute: each PULL recv waits efficiently for a message. The only application-level completion signal is UserReply on the return path, not the original PUSH send.</text>
+</svg>

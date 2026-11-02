@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 770" role="img" aria-labelledby="title desc">
+  <title id="title">nano-vLLM Sequence Block and BlockManager contracts</title>
+  <desc id="desc">A Sequence owns token history and a CPU block table. BlockManager owns blocks, a free ID deque, used ID set, and a full-prefix hash directory. Each Block stores its identifier, reference count, hash, and complete token IDs, while the actual KV values live in GPU memory.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .title { fill:#132238; font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 19px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .dash { fill:none; stroke:#4b8e79; stroke-width:2.2; stroke-dasharray:7 6; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="770" fill="#f8fbff"/>
+  <text x="800" y="44" class="title">nano-vLLM's cache-control data contracts</text>
+  <text x="800" y="73" class="small">CPU Python metadata decides ownership. A separate preallocated GPU tensor holds the actual K/V vectors.</text>
+
+  <rect x="72" y="125" width="380" height="430" class="box" fill="#e8f1ff"/>
+  <text x="262" y="164" class="label">`Sequence`</text>
+  <text x="262" y="201" class="mono">seq_id · status</text>
+  <text x="262" y="228" class="mono">token_ids · last_token</text>
+  <text x="262" y="255" class="mono">num_prompt_tokens</text>
+  <text x="262" y="282" class="mono">num_cached_tokens</text>
+  <text x="262" y="309" class="mono">num_scheduled_tokens</text>
+  <text x="262" y="336" class="mono">block_table: [0, 3, 4]</text>
+  <line x1="105" y1="365" x2="419" y2="365" stroke="#9ab0c5" stroke-width="1.4"/>
+  <text x="262" y="400" class="small">methods / computed views</text>
+  <text x="262" y="428" class="mono">block(i) · num_blocks</text>
+  <text x="262" y="455" class="mono">append_token(token_id)</text>
+  <text x="262" y="496" class="small">one inference request; not a user session</text>
+
+  <rect x="590" y="100" width="470" height="485" class="box" fill="#fff3d9"/>
+  <text x="825" y="140" class="label">`BlockManager`</text>
+  <text x="825" y="177" class="mono">blocks: list[Block]</text>
+  <text x="825" y="204" class="mono">free_block_ids: deque[int]</text>
+  <text x="825" y="231" class="mono">used_block_ids: set[int]</text>
+  <text x="825" y="258" class="mono">hash_to_block_id: dict[int, int]</text>
+  <line x1="625" y1="285" x2="1025" y2="285" stroke="#cdbb8d" stroke-width="1.4"/>
+  <text x="825" y="321" class="small">allocation lifecycle</text>
+  <text x="825" y="350" class="mono">can_allocate(seq) → cached-block count</text>
+  <text x="825" y="377" class="mono">allocate(seq, count) · may_append(seq)</text>
+  <text x="825" y="404" class="mono">hash_blocks(seq) · deallocate(seq)</text>
+  <text x="825" y="453" class="small">complete token blocks are indexed by an</text>
+  <text x="825" y="476" class="small">incremental prefix hash, then checked by token IDs</text>
+  <text x="825" y="523" class="small">does not contain K/V tensors</text>
+
+  <rect x="1200" y="125" width="320" height="300" class="box" fill="#e4f7f0"/>
+  <text x="1360" y="164" class="label">`Block(id=3)`</text>
+  <text x="1360" y="204" class="mono">block_id = 3</text>
+  <text x="1360" y="231" class="mono">ref_count = 2</text>
+  <text x="1360" y="258" class="mono">hash = h(prefix, tokens)</text>
+  <text x="1360" y="285" class="mono">token_ids = [51, 52, 53, 54]</text>
+  <text x="1360" y="334" class="small">one physical K/V page across</text>
+  <text x="1360" y="357" class="small">all model layers on this GPU rank</text>
+
+  <path d="M452 300 H590" class="edge"/>
+  <text x="520" y="282" class="small">allocate IDs into</text>
+  <path d="M1060 280 H1200" class="edge"/>
+  <text x="1130" y="262" class="small">owns metadata for</text>
+
+  <rect x="310" y="635" width="980" height="74" class="box" fill="#ece7ff"/>
+  <text x="800" y="667" class="label">GPU KV cache (owned by `ModelRunner`, not by `BlockManager`)</text>
+  <text x="800" y="693" class="small">`Sequence.block_table` IDs select physical K/V pages; attention reads/writes those pages during a forward pass.</text>
+  <path d="M1360 425 V635" class="dash"/>
+  <path d="M262 555 V635" class="dash"/>
+</svg>

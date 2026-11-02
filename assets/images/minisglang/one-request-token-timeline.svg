@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang token timeline for one request</title>
+  <desc id="desc">A five-token prompt is tokenized, prefetched, sampled into its first output token, then repeatedly decoded and streamed until an end condition. The diagram distinguishes host request state, GPU token pool and KV cache, and text delivered to the client.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .lane { fill:#f3f7fb; stroke:#c5d3df; stroke-width:1.5; rx:13; }
+      .node { stroke:#31465a; stroke-width:2; rx:12; }
+      .title { fill:#132238; font:600 22px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .lane-label { fill:#31465a; font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.3; marker-end:url(#arrow); }
+      .time { stroke:#8aa0b4; stroke-width:2; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="720" fill="#f8fbff"/>
+  <text x="800" y="42" class="title" font-size="27">A small request: prompt → first token → decode → stream</text>
+  <path d="M230 90 H1510" class="time"/>
+  <text x="1540" y="95" class="small">time</text>
+
+  <rect x="28" y="126" width="1544" height="130" class="lane"/>
+  <text x="54" y="156" class="lane-label">Frontend /</text><text x="54" y="179" class="lane-label">tokenizer</text>
+  <rect x="248" y="151" width="218" height="76" class="node" fill="#ece7ff"/>
+  <text x="357" y="181" class="label">`TokenizeMsg`</text><text x="357" y="205" class="small">uid=42, text, max_tokens=3</text>
+  <rect x="546" y="151" width="222" height="76" class="node" fill="#fff3d9"/>
+  <text x="657" y="181" class="label">`UserMsg`</text><text x="657" y="205" class="small">P=[71, 314, 99, 8, 52]</text>
+  <rect x="1260" y="151" width="238" height="76" class="node" fill="#ece7ff"/>
+  <text x="1379" y="181" class="label">stream fragments</text><text x="1379" y="205" class="small">“ hello” → “ world” → EOS</text>
+
+  <rect x="28" y="287" width="1544" height="180" class="lane"/>
+  <text x="54" y="323" class="lane-label">Scheduler</text><text x="54" y="346" class="lane-label">host state</text>
+  <rect x="808" y="314" width="246" height="112" class="node" fill="#e4f7f0"/>
+  <text x="931" y="344" class="label">create `Req`</text><text x="931" y="368" class="small">cached_len=0, device_len=5</text><text x="931" y="391" class="small">input_ids=P, table_idx=t</text><text x="931" y="413" class="small">build prefill `Batch`</text>
+  <rect x="1116" y="314" width="246" height="112" class="node" fill="#e4f7f0"/>
+  <text x="1239" y="344" class="label">postprocess result</text><text x="1239" y="368" class="small">append token 204 on host</text><text x="1239" y="391" class="small">cached_len=5, device_len=6</text><text x="1239" y="413" class="small">then schedule decode</text>
+
+  <rect x="28" y="498" width="1544" height="164" class="lane"/>
+  <text x="54" y="533" class="lane-label">GPU engine</text><text x="54" y="556" class="lane-label">rank r</text>
+  <rect x="808" y="526" width="246" height="102" class="node" fill="#e7f1ff"/>
+  <text x="931" y="556" class="label">prefill forward</text><text x="931" y="580" class="small">run P at positions 0…4</text><text x="931" y="603" class="small">write K/V; sample token 204</text>
+  <rect x="1116" y="526" width="246" height="102" class="node" fill="#e7f1ff"/>
+  <text x="1239" y="556" class="label">decode forward</text><text x="1239" y="580" class="small">run 204 at position 5</text><text x="1239" y="603" class="small">write K/V; sample next token</text>
+
+  <path d="M466 189 H546" class="edge"/>
+  <path d="M768 189 C800 189 808 305 808 314" class="edge"/>
+  <path d="M931 426 V526" class="edge"/>
+  <path d="M1054 577 H1116" class="edge"/>
+  <path d="M1239 526 V426" class="edge"/>
+  <path d="M1239 314 C1239 270 1379 270 1379 227" class="edge"/>
+  <path d="M1362 577 C1462 577 1470 490 1453 454 C1436 419 1408 397 1362 397" class="edge"/>
+  <text x="1448" y="498" class="small">repeat until EOS or the</text><text x="1448" y="518" class="small">three-token budget is exhausted</text>
+
+  <rect x="248" y="680" width="1250" height="24" rx="9" fill="#eef3f7"/>
+  <text x="873" y="697" class="small">Token IDs and text are illustrative. The model determines their actual values; cache/page allocation details are deferred to Part 3.</text>
+</svg>

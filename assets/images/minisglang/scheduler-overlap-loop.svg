@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang overlap scheduling: one Python thread and two CUDA streams</title>
+  <desc id="desc">One scheduler process main Python thread prepares work and handles prior results. It enqueues metadata operations on a scheduler CUDA stream and model operations on an Engine CUDA stream on the same GPU. The Engine stream executes forwards in order; its current forward can overlap scheduler preparation and prior-result handling.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .title { fill:#132238; font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .lane { fill:#f3f7fa; stroke:#c6d3df; stroke-width:1.5; rx:15; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.4; marker-end:url(#arrow); }
+      .dash { fill:none; stroke:#7890a8; stroke-width:2; stroke-dasharray:7 6; }
+    </style>
+  </defs>
+  <rect width="1600" height="720" fill="#f8fbff"/>
+  <text x="800" y="45" class="title">Overlap scheduling: one Python thread, two CUDA streams</text>
+  <text x="800" y="74" class="small">Stream A orders batch preparation; stream B orders model execution, with forwards kept in order.</text>
+
+  <text x="76" y="154" class="label" text-anchor="start">one scheduler process — its main Python thread</text>
+  <rect x="60" y="178" width="1470" height="150" class="lane"/>
+  <rect x="145" y="214" width="300" height="78" rx="12" fill="#e4f7f0" stroke="#31465a" stroke-width="2"/>
+  <text x="295" y="245" class="label">prepare batch n</text><text x="295" y="271" class="small">CPU + enqueue metadata on stream A</text>
+  <rect x="785" y="214" width="335" height="78" rx="12" fill="#fff3d9" stroke="#31465a" stroke-width="2"/>
+  <text x="952" y="245" class="label">process result n−1</text><text x="952" y="271" class="small">wait for copy event → reply / free</text>
+  <rect x="1240" y="214" width="210" height="78" rx="12" fill="#e4f7f0" stroke="#31465a" stroke-width="2"/>
+  <text x="1345" y="245" class="label">prepare n+1</text><text x="1345" y="271" class="small">enqueue on CUDA stream A</text>
+
+  <text x="76" y="414" class="label" text-anchor="start">CUDA stream B — Engine execution (same GPU)</text>
+  <rect x="60" y="438" width="1470" height="150" class="lane"/>
+  <rect x="492" y="474" width="525" height="78" rx="12" fill="#ece7ff" stroke="#31465a" stroke-width="2"/>
+  <text x="755" y="505" class="label">Engine forward batch n</text><text x="755" y="531" class="small">model shard → attention/KV → sample → async copy</text>
+  <rect x="1160" y="474" width="290" height="78" rx="12" fill="#ece7ff" stroke="#31465a" stroke-width="2"/>
+  <text x="1305" y="505" class="label">Engine forward n+1</text><text x="1305" y="531" class="small">begins after preparation</text>
+
+  <path d="M445 253 C470 253, 470 513, 492 513" class="edge"/>
+  <text x="440" y="382" class="mono">engine waits for preparation</text>
+  <path d="M1450 253 C1480 253, 1490 513, 1450 513" class="edge"/>
+
+  <rect x="155" y="627" width="1290" height="50" rx="12" fill="#f3f7fa" stroke="#c6d3df" stroke-width="1.4"/>
+  <text x="800" y="658" class="small">The overlap is between useful CPU/result work and GPU work. It preserves token causality: a sampled token affects a later decode only after its own forward completes.</text>
+</svg>

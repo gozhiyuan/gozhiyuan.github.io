@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang process architecture and request data flow</title>
+  <desc id="desc">An HTTP request moves from the API server to a tokenizer worker, then to scheduler rank zero. Rank zero broadcasts it to tensor-parallel scheduler ranks. Each rank runs its engine on one GPU. Rank zero returns sampled tokens to a detokenizer, which sends text fragments to the API server for streaming.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#c66719"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.2; rx:16; }
+      .group { fill:none; stroke:#8ba0b3; stroke-width:2; stroke-dasharray:8 7; rx:22; }
+      .title { fill:#132238; font:600 22px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .note { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .edge-orange { fill:none; stroke:#c66719; stroke-width:2.5; marker-end:url(#arrow-orange); }
+      .edge-dash { fill:none; stroke:#677d90; stroke-width:2.2; stroke-dasharray:7 6; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="760" fill="#f8fbff"/>
+  <text x="800" y="44" class="title" font-size="28">One streamed request through Mini-SGLang</text>
+
+  <rect x="42" y="293" width="175" height="112" class="box" fill="#e7f1ff"/>
+  <text x="129" y="335" class="label">Client</text>
+  <text x="129" y="361" class="small">OpenAI-compatible</text>
+  <text x="129" y="383" class="small">HTTP request / SSE</text>
+
+  <rect x="280" y="260" width="205" height="178" class="box" fill="#ece7ff"/>
+  <text x="382" y="302" class="label">FastAPI server</text>
+  <text x="382" y="329" class="small">assign `uid`</text>
+  <text x="382" y="352" class="small">hold client queues</text>
+  <text x="382" y="375" class="small">stream text fragments</text>
+  <text x="382" y="408" class="note" text-anchor="middle">one frontend process</text>
+
+  <rect x="545" y="260" width="208" height="178" class="box" fill="#fff3d9"/>
+  <text x="649" y="302" class="label">Tokenizer worker</text>
+  <text x="649" y="329" class="small">text → token IDs</text>
+  <text x="649" y="352" class="small">token ID → text</text>
+  <text x="649" y="408" class="note" text-anchor="middle">the default worker does both</text>
+
+  <rect x="812" y="112" width="724" height="478" class="group"/>
+  <text x="840" y="145" class="note" font-weight="600">one scheduler + engine process per tensor-parallel rank</text>
+
+  <rect x="850" y="182" width="245" height="140" class="box" fill="#e4f7f0"/>
+  <text x="972" y="222" class="label">Scheduler rank 0</text>
+  <text x="972" y="250" class="small">ZMQ receives `UserMsg`</text>
+  <text x="972" y="274" class="small">schedule / postprocess</text>
+  <text x="972" y="298" class="small">reply to detokenizer</text>
+
+  <rect x="850" y="372" width="245" height="140" class="box" fill="#e7f1ff"/>
+  <text x="972" y="411" class="label">Engine rank 0</text>
+  <text x="972" y="439" class="small">model + sampler</text>
+  <text x="972" y="463" class="small">KV cache + attention</text>
+  <text x="972" y="487" class="small">GPU 0</text>
+
+  <rect x="1240" y="182" width="245" height="140" class="box" fill="#e4f7f0"/>
+  <text x="1362" y="222" class="label">Scheduler rank 1…N−1</text>
+  <text x="1362" y="250" class="small">receive same messages</text>
+  <text x="1362" y="274" class="small">make same schedule</text>
+  <text x="1362" y="298" class="small">no client replies</text>
+
+  <rect x="1240" y="372" width="245" height="140" class="box" fill="#e7f1ff"/>
+  <text x="1362" y="411" class="label">Engine rank 1…N−1</text>
+  <text x="1362" y="439" class="small">local model shard</text>
+  <text x="1362" y="463" class="small">local KV-cache shard</text>
+  <text x="1362" y="487" class="small">GPU 1…N−1</text>
+
+  <path d="M217 333 H280" class="edge"/>
+  <text x="248" y="320" class="note" text-anchor="middle">HTTP</text>
+  <path d="M485 333 H545" class="edge-orange"/>
+  <text x="515" y="320" class="note" text-anchor="middle" fill="#a95713">ZMQ</text>
+  <path d="M753 303 H850" class="edge-orange"/>
+  <text x="802" y="289" class="note" text-anchor="middle" fill="#a95713">`UserMsg`</text>
+  <path d="M1095 251 H1240" class="edge-orange"/>
+  <text x="1167" y="238" class="note" text-anchor="middle" fill="#a95713">publish raw message</text>
+  <path d="M972 322 V372" class="edge"/>
+  <path d="M1362 322 V372" class="edge"/>
+  <path d="M1095 441 H1240" class="edge-dash"/>
+  <text x="1167" y="428" class="note" text-anchor="middle">TP collectives</text>
+  <path d="M850 286 C794 286 786 514 753 514" class="edge-orange"/>
+  <text x="785" y="496" class="note" text-anchor="middle" fill="#a95713">`DetokenizeMsg`</text>
+  <path d="M649 438 V559 H382 V438" class="edge-orange"/>
+  <text x="515" y="580" class="note" text-anchor="middle" fill="#a95713">ZMQ `UserReply` (text fragment)</text>
+  <path d="M280 386 H217" class="edge"/>
+  <text x="247" y="417" class="note" text-anchor="middle">SSE</text>
+
+  <rect x="42" y="655" width="1494" height="62" rx="12" fill="#eef3f7" stroke="#c7d4df"/>
+  <text x="790" y="681" class="small">ZMQ carries control messages and token IDs. Tensor-parallel ranks exchange model tensors through torch.distributed (NCCL or PyNCCL; a CPU Gloo group coordinates ranks).</text>
+  <text x="790" y="704" class="small">The arrows show logical ownership; rank-local CPU scheduling and GPU execution happen concurrently through overlap scheduling.</text>
+</svg>

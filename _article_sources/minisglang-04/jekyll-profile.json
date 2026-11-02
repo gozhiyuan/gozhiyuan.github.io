@@ -1,0 +1,23 @@
+{
+  "name": "yuanpang-blog",
+  "front_matter": {
+    "layout": "post",
+    "categories": [
+      "Large-Language-Model",
+      "LLM-Inference"
+    ],
+    "tags": [
+      "Blogs"
+    ]
+  },
+  "strip_first_heading": false,
+  "asset_roots": {
+    "image": "assets/images",
+    "video": "assets/videos",
+    "interactive": "assets/interactive",
+    "data": "assets/data"
+  },
+  "math": "none",
+  "content_selector": ".post .post-content",
+  "description": "Existing YAT blog: matching categories, H1 convention, and .post-content; equations use plain text code blocks."
+}

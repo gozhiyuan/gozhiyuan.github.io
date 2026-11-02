@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 690" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang component overview and blog-series roadmap</title>
+  <desc id="desc">The API server, tokenizer, per-rank scheduler and engine, and detokenizer are connected by request and response arrows. A lower band names four posts: the frontend and text boundary, scheduler, KV cache and prefix reuse, and engine execution.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#bd6417"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.2; rx:16; }
+      .group { fill:none; stroke:#8ba0b3; stroke-width:2; stroke-dasharray:8 7; rx:22; }
+      .title { fill:#132238; font:600 24px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .part { fill:#132238; font:600 16px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .edge-orange { fill:none; stroke:#bd6417; stroke-width:2.5; marker-end:url(#arrow-orange); }
+    </style>
+  </defs>
+  <rect width="1600" height="690" fill="#f8fbff"/>
+  <text x="800" y="43" class="title" font-size="27">Mini-SGLang: the map before the code</text>
+
+  <rect x="55" y="106" width="246" height="172" class="box" fill="#e8f1ff"/>
+  <circle cx="91" cy="140" r="18" fill="#5d86b5"/><text x="91" y="146" fill="#fff" font-family="sans-serif" font-size="18" text-anchor="middle">1</text>
+  <text x="178" y="151" class="label">API server</text>
+  <text x="178" y="179" class="small">OpenAI-compatible HTTP</text>
+  <text x="178" y="201" class="small">assigns `uid`; streams SSE</text>
+  <text x="178" y="245" class="small">`server/api_server.py`</text>
+
+  <rect x="390" y="106" width="246" height="172" class="box" fill="#fff3d9"/>
+  <circle cx="426" cy="140" r="18" fill="#d28a2e"/><text x="426" y="146" fill="#fff" font-family="sans-serif" font-size="18" text-anchor="middle">2</text>
+  <text x="513" y="151" class="label">Tokenizer worker</text>
+  <text x="513" y="179" class="small">text ⇄ token IDs</text>
+  <text x="513" y="201" class="small">isolates text processing</text>
+  <text x="513" y="245" class="small">`tokenizer/server.py`</text>
+
+  <rect x="723" y="72" width="580" height="255" class="group"/>
+  <text x="752" y="103" fill="#4c6074" font-family="sans-serif" font-size="14" font-weight="600">one rank-local worker for every TP GPU</text>
+  <rect x="757" y="125" width="230" height="158" class="box" fill="#e4f7f0"/>
+  <circle cx="792" cy="157" r="18" fill="#499477"/><text x="792" y="163" fill="#fff" font-family="sans-serif" font-size="18" text-anchor="middle">3</text>
+  <text x="872" y="168" class="label">Scheduler r</text>
+  <text x="872" y="195" class="small">admit, batch, allocate</text>
+  <text x="872" y="217" class="small">prefill/decode state</text>
+  <text x="872" y="260" class="small">`scheduler/`</text>
+  <rect x="1045" y="125" width="222" height="158" class="box" fill="#e7f1ff"/>
+  <text x="1156" y="168" class="label">Engine r</text>
+  <text x="1156" y="195" class="small">model shard, KV cache</text>
+  <text x="1156" y="217" class="small">attention + sampler</text>
+  <text x="1156" y="260" class="small">GPU r · `engine/`</text>
+
+  <rect x="1371" y="106" width="176" height="172" class="box" fill="#ece7ff"/>
+  <circle cx="1406" cy="140" r="18" fill="#8d72b5"/><text x="1406" y="146" fill="#fff" font-family="sans-serif" font-size="18" text-anchor="middle">4</text>
+  <text x="1459" y="151" class="label">Detokenizer</text>
+  <text x="1459" y="179" class="small">token ID → text</text>
+  <text x="1459" y="201" class="small">incremental output</text>
+  <text x="1459" y="245" class="small">`tokenizer/`</text>
+
+  <path d="M301 177 H390" class="edge-orange"/><text x="345" y="163" class="small">`TokenizeMsg`</text>
+  <path d="M636 177 H757" class="edge-orange"/><text x="697" y="163" class="small">`UserMsg`</text>
+  <path d="M987 204 H1045" class="edge"/><text x="1016" y="191" class="small">`Batch`</text>
+  <path d="M1267 177 H1371" class="edge-orange"/><text x="1318" y="163" class="small">rank 0 token ID</text>
+  <path d="M1459 278 V342 H178 V278" class="edge-orange"/><text x="818" y="363" class="small">incremental text fragment → API server → client SSE</text>
+
+  <rect x="55" y="420" width="1492" height="208" rx="18" fill="#eef3f7" stroke="#c6d3df" stroke-width="1.5"/>
+  <text x="89" y="455" fill="#31465a" font-family="sans-serif" font-size="18" font-weight="600">How the four posts descend through this map</text>
+  <rect x="83" y="485" width="332" height="105" class="box" fill="#e8f1ff"/>
+  <text x="249" y="515" class="part">Part 1 · API + text boundary</text><text x="249" y="540" class="small">tokenize/detokenize, processes,</text><text x="249" y="561" class="small">queues, and one streamed request</text>
+  <rect x="452" y="485" width="332" height="105" class="box" fill="#e4f7f0"/>
+  <text x="618" y="515" class="part">Part 2 · Scheduler</text><text x="618" y="540" class="small">prefill, decode, chunking,</text><text x="618" y="561" class="small">and overlap scheduling</text>
+  <rect x="821" y="485" width="332" height="105" class="box" fill="#ffe3d8"/>
+  <text x="987" y="515" class="part">Part 3 · KV cache and reuse</text><text x="987" y="540" class="small">page tables, radix cache,</text><text x="987" y="561" class="small">reuse, locking, eviction</text>
+  <rect x="1190" y="485" width="328" height="105" class="box" fill="#e7f1ff"/>
+  <text x="1354" y="515" class="part">Part 4 · Engine and boundary</text><text x="1354" y="540" class="small">attention, CUDA graphs, TP,</text><text x="1354" y="561" class="small">and Mini-SGLang vs. SGLang</text>
+</svg>

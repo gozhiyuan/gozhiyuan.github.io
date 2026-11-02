@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1700 850" role="img" aria-labelledby="title desc">
+  <title id="title">Radix prefix cache splits a compressed edge when request B shares only its prefix</title>
+  <desc id="desc">Request A first creates one compressed edge containing six token IDs and their six physical KV slots. Matching B aligns the four-token common prefix to two-token pages and splits the edge. After B's prefill computes its suffix K/V, the cache inserts a second branch.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box{stroke:#31465a;stroke-width:2;rx:12}.title{fill:#132238;font:600 27px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.label{fill:#132238;font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.small{fill:#4c6074;font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.mono{fill:#31465a;font:14px ui-monospace,SFMono-Regular,Menlo,monospace;text-anchor:middle}.edge{fill:none;stroke:#31465a;stroke-width:2.5;marker-end:url(#arrow)}.step{fill:#34735d;font:600 15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+    </style>
+  </defs>
+  <rect width="1700" height="850" fill="#f8fbff"/>
+  <text x="850" y="43" class="title">A radix edge can split at the shared page-aligned prefix</text>
+  <text x="850" y="75" class="small">Toy token IDs; page_size = 2. Each edge's token sequence and location sequence have the same length.</text>
+
+  <rect x="35" y="118" width="500" height="660" class="box" fill="#ffffff"/>
+  <text x="285" y="158" class="label">1 · A's finished prefix is cached</text>
+  <text x="285" y="190" class="small">A = [10, 11, 20, 21, 30, 31]</text>
+  <ellipse cx="285" cy="260" rx="55" ry="31" fill="#eef3f7" stroke="#31465a" stroke-width="2"/><text x="285" y="266" class="label">Root</text>
+  <path d="M285 291 V340" class="edge"/>
+  <rect x="75" y="340" width="420" height="150" rx="13" fill="#d9eafa" stroke="#31465a" stroke-width="2"/>
+  <text x="285" y="375" class="label">one compressed edge</text>
+  <text x="285" y="415" class="mono">_key   [10 11 | 20 21 | 30 31]</text>
+  <text x="285" y="448" class="mono">_value [ 0  1 |  2  3 |  4  5]</text>
+  <text x="285" y="522" class="small">A finishes: its table row is freed;</text>
+  <text x="285" y="546" class="small">these full pages remain reusable.</text>
+  <rect x="95" y="588" width="380" height="105" rx="10" fill="#eef3f7" stroke="#c6d3df"/>
+  <text x="285" y="624" class="mono">ref_count = 0</text>
+  <text x="285" y="654" class="small">leaf is currently evictable</text>
+
+  <rect x="600" y="118" width="500" height="660" class="box" fill="#ffffff"/>
+  <text x="850" y="158" class="label">2 · B matches four tokens</text>
+  <text x="850" y="190" class="small">B = [10, 11, 20, 21, 40, 41]</text>
+  <text x="850" y="220" class="small">match_req checks B[:-1]; match length rounds down to 4</text>
+  <ellipse cx="850" cy="275" rx="55" ry="31" fill="#eef3f7" stroke="#31465a" stroke-width="2"/><text x="850" y="281" class="label">Root</text>
+  <path d="M850 306 V350" class="edge"/>
+  <rect x="645" y="350" width="410" height="122" rx="13" fill="#b9dfcf" stroke="#31465a" stroke-width="2"/>
+  <text x="850" y="382" class="label">shared node (split_at 4)</text>
+  <text x="850" y="416" class="mono">_key   [10 11 | 20 21]</text>
+  <text x="850" y="445" class="mono">_value [ 0  1 |  2  3]</text>
+  <path d="M850 472 V525 H730 V552" class="edge"/>
+  <rect x="635" y="552" width="220" height="120" rx="12" fill="#f5e6cf" stroke="#31465a" stroke-width="2"/>
+  <text x="745" y="584" class="label">A suffix</text>
+  <text x="745" y="616" class="mono">[30 31]</text>
+  <text x="745" y="645" class="mono">[4 5]</text>
+  <rect x="870" y="552" width="200" height="120" rx="12" fill="#eef3f7" stroke="#8ba0b3" stroke-dasharray="7 5" stroke-width="2"/>
+  <text x="970" y="586" class="label">B suffix</text>
+  <text x="970" y="616" class="small">not inserted yet</text>
+  <text x="850" y="717" class="small">The lookup itself splits the old edge;</text>
+  <text x="850" y="741" class="small">B still must run prefill for its last page.</text>
+
+  <rect x="1165" y="118" width="500" height="660" class="box" fill="#ffffff"/>
+  <text x="1415" y="158" class="label">3 · B's prefill inserts its new suffix</text>
+  <ellipse cx="1415" cy="252" rx="55" ry="31" fill="#eef3f7" stroke="#31465a" stroke-width="2"/><text x="1415" y="258" class="label">Root</text>
+  <path d="M1415 283 V328" class="edge"/>
+  <rect x="1210" y="328" width="410" height="122" rx="13" fill="#b9dfcf" stroke="#31465a" stroke-width="2"/>
+  <text x="1415" y="360" class="label">shared prefix · protected by B</text>
+  <text x="1415" y="394" class="mono">[10 11 | 20 21] → [0 1 | 2 3]</text>
+  <path d="M1415 450 V495 H1295 V520" class="edge"/>
+  <path d="M1415 450 V495 H1535 V520" class="edge"/>
+  <rect x="1190" y="520" width="210" height="120" rx="12" fill="#f5e6cf" stroke="#31465a" stroke-width="2"/>
+  <text x="1295" y="553" class="label">A-only leaf</text>
+  <text x="1295" y="584" class="mono">[30 31] → [4 5]</text>
+  <text x="1295" y="615" class="small">ref_count = 0</text>
+  <rect x="1420" y="520" width="230" height="120" rx="12" fill="#dcebd5" stroke="#31465a" stroke-width="2"/>
+  <text x="1535" y="553" class="label">B branch</text>
+  <text x="1535" y="584" class="mono">[40 41] → [6 7]</text>
+  <text x="1535" y="615" class="small">locked while B runs</text>
+  <text x="1415" y="698" class="small">B reuses slots 0–3 and writes only</text>
+  <text x="1415" y="722" class="small">its uncached prompt suffix to 6–7.</text>
+</svg>

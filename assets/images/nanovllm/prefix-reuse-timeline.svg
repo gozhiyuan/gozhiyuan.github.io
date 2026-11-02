@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 830" role="img" aria-labelledby="title desc">
+  <title id="title">nano-vLLM exact full-block prefix reuse</title>
+  <desc id="desc">Request A allocates physical blocks zero one and two for an eleven-token prompt and hashes only complete first and second blocks. Request B later shares block zero after matching the same first complete block, then allocates blocks three through five for its suffix. The partial tail blocks are not reusable hash entries.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.1; rx:13; }
+      .title { fill:#132238; font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .dash { fill:none; stroke:#7890a8; stroke-width:2; stroke-dasharray:7 6; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="830" fill="#f8fbff"/>
+  <text x="800" y="43" class="title">Exact full-block prefix reuse in nano-vLLM</text>
+  <text x="800" y="72" class="small">Toy block size = 4. Colors denote physical block IDs, not the token values themselves.</text>
+
+  <line x1="115" y1="115" x2="1490" y2="115" stroke="#9aabbc" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+  <text x="125" y="102" class="small">t0: request A arrives</text><text x="1110" y="102" class="small">t1: request B arrives</text>
+
+  <rect x="85" y="165" width="610" height="285" class="box" fill="#fffdf7"/>
+  <text x="390" y="202" class="label">A = [11 12 13 14 | 21 22 23 24 | 31 32 33]</text>
+  <text x="390" y="230" class="small">two complete logical blocks, one partial tail</text>
+  <rect x="125" y="265" width="150" height="48" rx="8" fill="#8ebbe8"/><text x="200" y="295" class="mono">logical 0 → ID 0</text>
+  <rect x="285" y="265" width="150" height="48" rx="8" fill="#f3b36b"/><text x="360" y="295" class="mono">logical 1 → ID 1</text>
+  <rect x="445" y="265" width="115" height="48" rx="8" fill="#b8d9a5"/><text x="502" y="295" class="mono">tail → ID 2</text>
+  <text x="390" y="356" class="mono">A.block_table = [0, 1, 2]</text>
+  <text x="390" y="387" class="small">after successful prefill: hash h0 → 0, h1(prefix=h0) → 1</text>
+  <text x="390" y="416" class="small">ID 2 is partial: its tokens are not entered into `hash_to_block_id`</text>
+
+  <rect x="915" y="165" width="600" height="285" class="box" fill="#fffdf7"/>
+  <text x="1215" y="202" class="label">B = [11 12 13 14 | 51 52 53 54 | 61 62 63 64 | 71]</text>
+  <text x="1215" y="230" class="small">first complete logical block matches A; suffix differs</text>
+  <rect x="950" y="265" width="135" height="48" rx="8" fill="#8ebbe8"/><text x="1017" y="295" class="mono">share ID 0</text>
+  <rect x="1095" y="265" width="135" height="48" rx="8" fill="#d9a5d0"/><text x="1162" y="295" class="mono">new ID 3</text>
+  <rect x="1240" y="265" width="135" height="48" rx="8" fill="#d4b58f"/><text x="1307" y="295" class="mono">new ID 4</text>
+  <rect x="1385" y="265" width="95" height="48" rx="8" fill="#cbd4de"/><text x="1432" y="295" class="mono">ID 5</text>
+  <text x="1215" y="356" class="mono">B.block_table = [0, 3, 4, 5]</text>
+  <text x="1215" y="387" class="small">cached tokens = 4; only B's nine-token suffix goes through prefill</text>
+  <text x="1215" y="416" class="small">ID 0 ref_count: 1 → 2; B reads its shared prefix K/V from block 0</text>
+
+  <path d="M695 290 H915" class="edge"/>
+  <text x="805" y="270" class="small">`can_allocate(B)` matches h0</text>
+
+  <rect x="160" y="540" width="1280" height="190" class="box" fill="#f3f7fa"/>
+  <text x="800" y="578" class="label">BlockManager's CPU directory after B is allocated</text>
+  <rect x="225" y="615" width="150" height="58" rx="9" fill="#8ebbe8"/><text x="300" y="641" class="mono">Block 0</text><text x="300" y="661" class="small">ref=2 · h0</text>
+  <rect x="390" y="615" width="150" height="58" rx="9" fill="#f3b36b"/><text x="465" y="641" class="mono">Block 1</text><text x="465" y="661" class="small">ref=1 · h1</text>
+  <rect x="555" y="615" width="150" height="58" rx="9" fill="#b8d9a5"/><text x="630" y="641" class="mono">Block 2</text><text x="630" y="661" class="small">ref=1 · partial</text>
+  <rect x="720" y="615" width="150" height="58" rx="9" fill="#d9a5d0"/><text x="795" y="641" class="mono">Block 3</text><text x="795" y="661" class="small">ref=1 · B suffix</text>
+  <rect x="885" y="615" width="150" height="58" rx="9" fill="#d4b58f"/><text x="960" y="641" class="mono">Block 4</text><text x="960" y="661" class="small">ref=1 · B suffix</text>
+  <rect x="1050" y="615" width="150" height="58" rx="9" fill="#cbd4de"/><text x="1125" y="641" class="mono">Block 5</text><text x="1125" y="661" class="small">ref=1 · partial</text>
+  <text x="800" y="704" class="small">The long-lived GPU K/V tensor is indexed by these IDs. A hash entry is metadata, not a copy of K/V values.</text>
+</svg>

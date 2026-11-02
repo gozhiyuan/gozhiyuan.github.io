@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 840" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang admission and chunked prefill</title>
+  <desc id="desc">A pending request must acquire a table row and cache capacity reservation to become a Req. A separate prefill token budget splits a 12-token prompt into an 8-token incomplete ChunkedReq followed by a final 4-token Req.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.1; rx:14; }
+      .title { fill:#132238; font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .yes { fill:#236b4f; font:600 15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .no { fill:#a14444; font:600 15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+    </style>
+  </defs>
+  <rect width="1600" height="840" fill="#f8fbff"/>
+  <text x="800" y="44" class="title">Admission: can this pending prompt join a prefill batch?</text>
+  <text x="800" y="73" class="small">PrefillAdder checks resources first; the token budget then bounds prompt work in this batch.</text>
+
+  <rect x="80" y="125" width="245" height="122" class="box" fill="#fff3d9"/>
+  <text x="202" y="161" class="label">`PendingReq A`</text><text x="202" y="188" class="small">prompt: 12 uncached tokens</text><text x="202" y="213" class="small">output allowance: 4</text>
+  <path d="M325 186 H405" class="edge"/>
+
+  <rect x="405" y="104" width="300" height="164" class="box" fill="#e4f7f0"/>
+  <text x="555" y="140" class="label">`PrefillAdder.try_add_one`</text><text x="555" y="170" class="small">1. require a free table row</text><text x="555" y="195" class="small">2. account for reusable prefix</text><text x="555" y="220" class="small">3. ensure cache capacity remains</text><text x="555" y="245" class="small">4. choose this pass's chunk size</text>
+
+  <path d="M705 186 H785" class="edge"/>
+  <rect x="785" y="104" width="285" height="164" class="box" fill="#e8f1ff"/>
+  <text x="927" y="140" class="label">admission check</text><text x="927" y="171" class="small">uncached prompt + output budget</text><text x="927" y="196" class="small">fit after active-decode reserve</text><text x="927" y="228" class="small">and one table row is available</text>
+  <path d="M1070 186 H1150" class="edge"/>
+  <rect x="1150" y="125" width="315" height="122" class="box" fill="#ece7ff"/>
+  <text x="1307" y="161" class="label">resource-owning request</text><text x="1307" y="188" class="small">table row + cache handle held</text><text x="1307" y="213" class="small">eligible for a prefill Batch</text>
+  <text x="1110" y="158" class="yes">yes</text>
+
+  <rect x="440" y="310" width="720" height="92" class="box" fill="#f3f7fa"/>
+  <text x="800" y="343" class="label">The reservation keeps capacity for requests already decoding</text>
+  <text x="800" y="374" class="small">Part 3 explains the page-based accounting behind this capacity estimate.</text>
+
+  <line x1="80" y1="470" x2="1520" y2="470" stroke="#c6d3df" stroke-width="2"/>
+  <text x="800" y="515" class="label">Example: budget = 8 tokens, A has 12 tokens, then B has 4 tokens</text>
+
+  <rect x="85" y="560" width="370" height="177" class="box" fill="#fff3d9"/>
+  <text x="270" y="596" class="label">prefill pass 1</text><text x="270" y="625" class="small">A[0:8] uses all 8 budget tokens</text>
+  <rect x="125" y="655" width="52" height="34" fill="#d18a1e"/><rect x="181" y="655" width="52" height="34" fill="#d18a1e"/><rect x="237" y="655" width="52" height="34" fill="#d18a1e"/><rect x="293" y="655" width="52" height="34" fill="#d18a1e"/><rect x="349" y="655" width="52" height="34" fill="#d18a1e"/>
+  <text x="270" y="720" class="mono">ChunkedReq: no sampling, no decode</text>
+
+  <path d="M455 647 H570" class="edge"/>
+  <rect x="570" y="560" width="430" height="177" class="box" fill="#e8f1ff"/>
+  <text x="785" y="596" class="label">pending order for the next pass</text><text x="785" y="626" class="small">A keeps its chunk state at the front</text>
+  <rect x="650" y="657" width="110" height="36" rx="8" fill="#d18a1e"/><text x="705" y="681" class="mono">A[8:12]</text>
+  <rect x="790" y="657" width="90" height="36" rx="8" fill="#78b89b"/><text x="835" y="681" class="mono">B[0:4]</text>
+  <text x="785" y="720" class="small">both fit the renewed 8-token budget</text>
+
+  <path d="M1000 647 H1115" class="edge"/>
+  <rect x="1115" y="560" width="400" height="177" class="box" fill="#e4f7f0"/>
+  <text x="1315" y="596" class="label">prefill pass 2</text><text x="1315" y="626" class="small">A's final chunk becomes a normal `Req`</text><text x="1315" y="655" class="small">A and B can now sample first tokens</text><text x="1315" y="696" class="mono">then join DecodeManager</text>
+</svg>

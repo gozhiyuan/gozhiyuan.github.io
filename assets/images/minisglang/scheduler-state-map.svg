@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 960" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang Part 2 component and request-flow map</title>
+  <desc id="desc">A request enters through FastAPI and a tokenizer worker, becomes UserMsg, then moves through scheduler receive and PendingReq, admission by PrefillAdder, batch selection and preparation in Section 3, and Engine execution launched by the Section 4 scheduler loop. Unfinished Req objects enter DecodeManager for later decode batches, as traced in Section 5. Sampled token IDs travel back through detokenization and FrontendManager to the client.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#354c63"/></marker>
+    <marker id="returnArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#4d8c77"/></marker>
+    <marker id="messageArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#c16a13"/></marker>
+    <style>
+      .bg{fill:#f8fbff}.group{fill:none;stroke:#8ca4bb;stroke-width:2;stroke-dasharray:9 7;rx:20}.box{stroke:#354c63;stroke-width:2;rx:14}
+      .title{fill:#14243a;font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .heading{fill:#14243a;font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .small{fill:#465d74;font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .mono{fill:#31465b;font:14px ui-monospace,SFMono-Regular,Menlo,monospace;text-anchor:middle}
+      .badge{fill:#36536d;font:600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}
+      .edge{fill:none;stroke:#354c63;stroke-width:2.5;marker-end:url(#arrow)}
+      .message{fill:none;stroke:#c16a13;stroke-width:2.6;marker-end:url(#messageArrow)}
+      .return{fill:none;stroke:#4d8c77;stroke-width:2.5;marker-end:url(#returnArrow)}
+      .loop{fill:none;stroke:#4d8c77;stroke-width:2.2;stroke-dasharray:7 6;marker-end:url(#returnArrow)}
+    </style>
+  </defs>
+  <rect width="1760" height="960" class="bg"/>
+  <text x="880" y="44" class="title">Mini-SGLang Part 2: components and one request's journey</text>
+  <text x="880" y="73" class="small">Each arrow changes either the request's owner, its representation, or the batch that will run next.</text>
+
+  <rect x="30" y="190" width="370" height="350" class="group"/>
+  <text x="215" y="222" class="heading">Serving boundary · Part 1 context</text>
+  <rect x="65" y="265" width="300" height="90" class="box" fill="#e8f1ff"/>
+  <text x="215" y="298" class="heading">FastAPI route / FrontendManager</text>
+  <text x="215" y="328" class="small">HTTP request in · SSE text out</text>
+  <rect x="65" y="415" width="300" height="95" class="box" fill="#fff2d9"/>
+  <text x="215" y="448" class="heading">Tokenizer worker</text>
+  <text x="215" y="476" class="small">text → token IDs · detokenizes on return</text>
+  <path d="M215 355 V415" class="message"/>
+  <text x="276" y="388" class="mono">TokenizeMsg</text>
+
+  <rect x="420" y="145" width="1310" height="565" class="group"/>
+  <text x="1075" y="180" class="heading">Scheduler processes · one per TP rank (rank 0 receives external messages)</text>
+  <text x="1075" y="210" class="small">Section 2: receive · Section 3: admit, select, prepare · Section 4: execute and overlap</text>
+
+  <rect x="445" y="265" width="175" height="150" class="box" fill="#e8f1ff"/>
+  <text x="532" y="291" class="badge">SECTION 2</text>
+  <text x="532" y="326" class="heading">Receive / fan out</text>
+  <text x="532" y="354" class="small">rank 0 PULLs</text>
+  <text x="532" y="379" class="small">PUB/SUB to TP peers</text>
+  <text x="532" y="402" class="mono">receive_msg()</text>
+  <path d="M365 462 H405 V340 H445" class="message"/>
+  <text x="410" y="440" class="mono">UserMsg</text>
+
+  <rect x="645" y="265" width="175" height="150" class="box" fill="#e8f1ff"/>
+  <text x="732" y="291" class="badge">SECTION 2</text>
+  <text x="732" y="326" class="heading">Validate arrival</text>
+  <text x="732" y="355" class="mono">_process_one_msg()</text>
+  <text x="732" y="385" class="small">length / token budget</text>
+  <path d="M620 340 H645" class="edge"/>
+
+  <rect x="845" y="250" width="195" height="180" class="box" fill="#e4f7f0"/>
+  <text x="942" y="278" class="badge">SECTIONS 1–2</text>
+  <text x="942" y="315" class="heading">PrefillManager</text>
+  <text x="942" y="350" class="mono">pending_list</text>
+  <text x="942" y="382" class="heading">PendingReq</text>
+  <text x="942" y="407" class="small">lightweight · not admitted</text>
+  <path d="M820 340 H845" class="edge"/>
+
+  <rect x="1065" y="250" width="195" height="180" class="box" fill="#fff2d9"/>
+  <text x="1162" y="278" class="badge">SECTION 3 · CACHE IN PART 3</text>
+  <text x="1162" y="315" class="heading">PrefillAdder</text>
+  <text x="1162" y="348" class="small">checks TableManager</text>
+  <text x="1162" y="373" class="small">+ CacheManager capacity</text>
+  <text x="1162" y="405" class="heading">admits → Req</text>
+  <path d="M1040 340 H1065" class="edge"/>
+
+  <rect x="1285" y="250" width="195" height="180" class="box" fill="#e4f7f0"/>
+  <text x="1382" y="278" class="badge">SECTION 3</text>
+  <text x="1382" y="315" class="heading">Select + prepare</text>
+  <text x="1382" y="348" class="small">Prefill first; else decode</text>
+  <text x="1382" y="373" class="mono">Batch → _prepare_batch()</text>
+  <text x="1382" y="405" class="mono">→ ForwardInput</text>
+  <path d="M1260 340 H1285" class="edge"/>
+
+  <rect x="1505" y="250" width="195" height="180" class="box" fill="#dfeefa"/>
+  <text x="1602" y="278" class="badge">SECTION 4 · PART 4 DETAILS</text>
+  <text x="1602" y="315" class="heading">Engine</text>
+  <text x="1602" y="350" class="mono">forward_batch(batch, args)</text>
+  <text x="1602" y="382" class="small">model shard on this rank's GPU</text>
+  <text x="1602" y="407" class="small">samples token IDs</text>
+  <path d="M1480 340 H1505" class="edge"/>
+
+  <rect x="1275" y="515" width="300" height="110" class="box" fill="#e4f7f0"/>
+  <text x="1425" y="544" class="badge">SECTIONS 3 AND 5</text>
+  <text x="1425" y="577" class="heading">DecodeManager.running_reqs</text>
+  <text x="1425" y="604" class="small">unfinished Req gets a later one-token batch</text>
+  <path d="M1602 430 V474 H1575 V515" class="edge"/>
+  <text x="1647" y="474" class="small" text-anchor="end">_forward(): filter_reqs()</text>
+  <path d="M1300 515 L1382 430" class="loop"/>
+  <text x="1310" y="480" class="small" text-anchor="start">next decode</text>
+
+  <rect x="30" y="765" width="1700" height="145" rx="18" fill="#eef5f1" stroke="#b9d2c7" stroke-width="1.5"/>
+  <text x="880" y="797" class="heading">Sampled token return · only rank 0 sends the detokenization message</text>
+
+  <rect x="85" y="820" width="250" height="68" class="box" fill="#e8f1ff"/>
+  <text x="210" y="848" class="heading">Client SSE</text><text x="210" y="872" class="small">incremental text</text>
+  <rect x="470" y="820" width="270" height="68" class="box" fill="#e8f1ff"/>
+  <text x="605" y="848" class="heading">FrontendManager</text><text x="605" y="872" class="small">routes UserReply by uid</text>
+  <rect x="875" y="820" width="270" height="68" class="box" fill="#fff2d9"/>
+  <text x="1010" y="848" class="heading">Text worker</text><text x="1010" y="872" class="small">token IDs → new text fragment</text>
+  <rect x="1290" y="820" width="325" height="68" class="box" fill="#e4f7f0"/>
+  <text x="1452" y="848" class="heading">rank 0 → DetokenizeMsg</text><text x="1452" y="872" class="small">sampled token ID + finished flag</text>
+  <path d="M470 854 H335" class="return"/><text x="400" y="840" class="mono">UserReply</text>
+  <path d="M875 854 H740" class="return"/><text x="808" y="840" class="mono">ZMQ</text>
+  <path d="M1290 854 H1145" class="return"/><text x="1217" y="840" class="mono">ZMQ</text>
+  <path d="M1602 430 V735 H1452 V820" class="return"/>
+  <text x="1586" y="720" class="mono" text-anchor="end">sampled token IDs</text>
+</svg>

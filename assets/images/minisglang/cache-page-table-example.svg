@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 700" role="img" aria-labelledby="title desc">
+  <title id="title">Request B maps a shared logical prefix to physical KV slots</title>
+  <desc id="desc">With page size two, request B reuses physical slots zero through three for four matching tokens and allocates slots six and seven for its two new prompt tokens. Its table row maps logical positions to those physical locations.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box{stroke:#31465a;stroke-width:2;rx:12}.title{fill:#132238;font:600 27px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.label{fill:#132238;font:600 19px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.small{fill:#4c6074;font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-anchor:middle}.mono{fill:#31465a;font:16px ui-monospace,SFMono-Regular,Menlo,monospace;text-anchor:middle}.edge{fill:none;stroke:#31465a;stroke-width:2.4;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1600" height="700" fill="#f8fbff"/>
+  <text x="800" y="42" class="title">One request row maps token positions to GPU KV locations</text>
+  <text x="800" y="73" class="small">Toy example: page_size = 2; Request A's finished prefix is already cached; Request B shares its first four tokens.</text>
+
+  <rect x="60" y="130" width="410" height="185" class="box" fill="#e8f1ff"/>
+  <text x="265" y="167" class="label">B's logical sequence</text>
+  <text x="265" y="211" class="mono">position   0  1 | 2  3 | 4  5</text>
+  <text x="265" y="251" class="mono">token ID  10 11 |20 21 |40 41</text>
+  <text x="265" y="286" class="small">first four token IDs match A</text>
+
+  <rect x="570" y="112" width="470" height="222" class="box" fill="#fff3d9"/>
+  <text x="805" y="151" class="label">B's `page_table` row (table_idx = 2)</text>
+  <text x="805" y="192" class="small">logical position</text>
+  <text x="805" y="222" class="mono">0   1   2   3   4   5</text>
+  <text x="805" y="268" class="small">physical token slot</text>
+  <text x="805" y="300" class="mono">0   1   2   3   6   7</text>
+  <path d="M470 222 H570" class="edge"/>
+
+  <rect x="1140" y="112" width="400" height="222" class="box" fill="#ffe3d8"/>
+  <text x="1340" y="151" class="label">Engine's GPU K/V pool</text>
+  <text x="1340" y="188" class="small">physical page base → token slots</text>
+  <rect x="1190" y="210" width="130" height="48" rx="8" fill="#8ebbe8" stroke="#31465a"/><text x="1255" y="240" class="mono">0 → [0,1]</text>
+  <rect x="1330" y="210" width="130" height="48" rx="8" fill="#8ebbe8" stroke="#31465a"/><text x="1395" y="240" class="mono">2 → [2,3]</text>
+  <rect x="1190" y="270" width="130" height="42" rx="8" fill="#d9a5d0" stroke="#31465a"/><text x="1255" y="297" class="mono">4 → [4,5]</text>
+  <rect x="1330" y="270" width="130" height="42" rx="8" fill="#b8d9a5" stroke="#31465a"/><text x="1395" y="297" class="mono">6 → [6,7]</text>
+  <path d="M1040 222 H1140" class="edge"/>
+
+  <rect x="80" y="405" width="1440" height="210" rx="14" fill="#eef3f7" stroke="#c6d3df" stroke-width="1.5"/>
+  <text x="800" y="448" class="label">How the row was filled</text>
+  <rect x="125" y="482" width="390" height="95" rx="10" fill="#e4f7f0" stroke="#31465a" stroke-width="1.7"/>
+  <text x="320" y="518" class="mono">RadixCacheHandle(cached_len=4)</text>
+  <text x="320" y="548" class="small">matched indices [0, 1, 2, 3]</text>
+  <path d="M515 530 H600" class="edge"/>
+  <rect x="600" y="482" width="390" height="95" rx="10" fill="#fff3d9" stroke="#31465a" stroke-width="1.7"/>
+  <text x="795" y="518" class="mono">CacheManager._allocate(1 page)</text>
+  <text x="795" y="548" class="small">page base 6 expands to slots [6, 7]</text>
+  <path d="M990 530 H1075" class="edge"/>
+  <rect x="1075" y="482" width="390" height="95" rx="10" fill="#e8f1ff" stroke="#31465a" stroke-width="1.7"/>
+  <text x="1270" y="518" class="mono">_write_page_table(row=2, pos=4..5)</text>
+  <text x="1270" y="548" class="small">new prompt K/V will be written at slots 6, 7</text>
+</svg>

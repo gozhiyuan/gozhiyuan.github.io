@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc">
+  <title id="title">Candidate score and cache paths in the two mini engines</title>
+  <desc id="desc">The Juan adapter constructs shared state and question token IDs. Mini-SGLang reads candidate next-token scores from prefill logits and uses a radix prefix cache. Nano-vLLM reads them at the final prompt prefill step and reuses full hashed prefix blocks. Both return scores to the adapter for conditional normalization.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#455a70"/></marker>
+    <style>
+      .title{font:700 25px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#16283c;text-anchor:middle}
+      .head{font:700 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#16283c;text-anchor:middle}
+      .label{font:700 19px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#16283c}
+      .body{font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#43576d;text-anchor:middle}
+      .note{font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#43576d;text-anchor:middle}
+      .edge{fill:none;stroke:#455a70;stroke-width:2;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="570" fill="#f8fbff"/>
+  <text x="600" y="39" class="title">One adapter, two engine readout paths</text>
+  <rect x="220" y="58" width="760" height="72" rx="12" fill="#e7f0ff" stroke="#93b4dc"/>
+  <text x="600" y="86" class="head">Juan adapter: state prefix + separate question token IDs</text>
+  <text x="600" y="113" class="body">single-token answer labels → score_token_ids per prompt → one batch</text>
+  <text x="35" y="193" class="label">mini-SGLang</text>
+  <rect x="236" y="157" width="204" height="90" rx="10" fill="#e4f7f0" stroke="#8dbca9"/>
+  <text x="338" y="189" class="head">Radix cache</text>
+  <text x="338" y="216" class="body">match token prefix</text>
+  <rect x="489" y="157" width="220" height="90" rx="10" fill="#e4f7f0" stroke="#8dbca9"/>
+  <text x="599" y="189" class="head">Engine.forward_batch</text>
+  <text x="599" y="216" class="body">prefill next-token logits</text>
+  <rect x="758" y="157" width="202" height="90" rx="10" fill="#e4f7f0" stroke="#8dbca9"/>
+  <text x="859" y="189" class="head">Gather IDs</text>
+  <text x="859" y="216" class="body">candidate logprobs</text>
+  <path d="M440 202 H489 M709 202 H758" class="edge"/>
+  <path d="M600 130 V142 H338 V157 M600 142 H599 V157" class="edge"/>
+  <text x="35" y="331" class="label">nano-vLLM</text>
+  <rect x="236" y="295" width="204" height="90" rx="10" fill="#fff3df" stroke="#d4ae73"/>
+  <text x="338" y="327" class="head">Hash cache</text>
+  <text x="338" y="354" class="body">reuse full blocks</text>
+  <rect x="489" y="295" width="220" height="90" rx="10" fill="#fff3df" stroke="#d4ae73"/>
+  <text x="599" y="327" class="head">ModelRunner.run</text>
+  <text x="599" y="354" class="body">final prompt prefill</text>
+  <rect x="758" y="295" width="202" height="90" rx="10" fill="#fff3df" stroke="#d4ae73"/>
+  <text x="859" y="327" class="head">Gather IDs</text>
+  <text x="859" y="354" class="body">candidate logprobs</text>
+  <path d="M440 340 H489 M709 340 H758" class="edge"/>
+  <path d="M600 130 V278 H338 V295 M600 278 H599 V295" class="edge"/>
+  <rect x="250" y="427" width="700" height="66" rx="12" fill="#edeafa" stroke="#b0a4d5"/>
+  <text x="600" y="453" class="head">Adapter: softmax over offered answers only</text>
+  <text x="600" y="478" class="body">return typed decisions and per-option probabilities</text>
+  <path d="M960 202 H1011 V460 H950 M960 340 H1000 V460" class="edge"/>
+  <text x="600" y="532" class="note">The engine returns scores; the adapter maps labels back to application choices.</text>
+  <text x="600" y="554" class="note">Cache counters describe reuse, not latency or probability calibration.</text>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang Step 3 backend process startup</title>
+  <desc id="desc">The frontend parent calls start_subprocess after creating its ZMQ endpoints. It starts all scheduler and text-worker children without waiting. The detokenizer and optional tokenizers each put one readiness string into a multiprocessing ack queue; rank zero puts one after every tensor-parallel rank has crossed the startup barrier, while non-primary ranks do not put an acknowledgement. The parent gets the expected number of strings, then opens Uvicorn.</desc>
+  <defs>
+    <marker id="navy" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <marker id="orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#bd6417"/></marker>
+    <style>
+      .title { fill:#132238; font:600 26px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .group { fill:none; stroke:#8ba0b3; stroke-width:2; stroke-dasharray:8 7; rx:18; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .note { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#navy); }
+      .edge-orange { fill:none; stroke:#bd6417; stroke-width:2.6; marker-end:url(#orange); }
+      .edge-dash { fill:none; stroke:#8ba0b3; stroke-width:2; stroke-dasharray:7 5; }
+    </style>
+  </defs>
+  <rect width="1600" height="720" fill="#f8fbff"/>
+  <text x="800" y="44" class="title">Step 3: the parent turns one configuration into ready backend processes</text>
+
+  <rect x="38" y="90" width="342" height="505" class="group"/>
+  <text x="66" y="121" class="note" font-weight="600">parent process</text>
+  <rect x="76" y="151" width="266" height="125" class="box" fill="#e8f1ff"/>
+  <text x="209" y="184" class="label">run_api_server()</text><text x="209" y="210" class="small">FrontendManager + ZMQ endpoints</text><text x="209" y="233" class="small">already created in Step 2</text><text x="209" y="255" class="small">calls start_backend()</text>
+  <rect x="76" y="355" width="266" height="125" class="box" fill="#fff3d9"/>
+  <text x="209" y="388" class="label">start_subprocess()</text><text x="209" y="414" class="small">spawn fresh Python children</text><text x="209" y="437" class="small">pass ServerArgs + ack_queue</text><text x="209" y="459" class="small">no request is processed here</text>
+  <path d="M209 276 V355" class="edge"/>
+  <rect x="76" y="523" width="266" height="47" class="box" fill="#e8f1ff"/>
+  <text x="209" y="553" class="label">wait for acks → Uvicorn listens</text>
+
+  <rect x="470" y="90" width="1092" height="505" class="group"/>
+  <text x="500" y="121" class="note" font-weight="600">child backend processes — pre-started once, before HTTP serving</text>
+  <rect x="516" y="159" width="275" height="152" class="box" fill="#e4f7f0"/>
+  <text x="654" y="192" class="label">TP rank 0 child</text><text x="654" y="218" class="small">Scheduler + Engine</text><text x="654" y="241" class="small">cuda:0; model/KV-cache shard</text><text x="654" y="264" class="small">after TP barrier: put “Scheduler ready”</text><text x="654" y="287" class="small">then waits for UserMsg</text>
+  <rect x="856" y="159" width="275" height="152" class="box" fill="#e4f7f0"/>
+  <text x="994" y="192" class="label">TP rank 1 child</text><text x="994" y="218" class="small">Scheduler + Engine</text><text x="994" y="241" class="small">cuda:1; model/KV-cache shard</text><text x="994" y="264" class="small">joins barrier; does not put ack</text><text x="994" y="287" class="small">then waits for UserMsg</text>
+  <rect x="1196" y="159" width="314" height="152" class="box" fill="#ece7ff"/>
+  <text x="1353" y="192" class="label">CPU detokenizer child</text><text x="1353" y="218" class="small">always created</text><text x="1353" y="241" class="small">default: also tokenizes</text><text x="1353" y="264" class="small">loads tokenizer; put “Tokenize ready”</text><text x="1353" y="287" class="small">then blocks for messages</text>
+  <rect x="650" y="390" width="490" height="125" class="box" fill="#fff3d9"/>
+  <text x="895" y="423" class="label">Optional CPU tokenizer children</text><text x="895" y="449" class="small">--num-tokenizer N starts N additional processes</text><text x="895" y="472" class="small">not one per GPU; each connects to the shared tokenizer endpoint</text><text x="895" y="495" class="small">each loads tokenizer; puts one “Tokenize ready” string</text>
+  <path d="M342 417 H430 V140 H470" class="edge"/>
+  <text x="397" y="395" class="small">spawn every configured worker</text>
+  <path d="M654 311 V535 H760" class="edge-orange"/>
+  <path d="M1353 311 V535 H1270" class="edge-orange"/>
+  <path d="M895 515 V535" class="edge-orange"/>
+  <path d="M994 311 V340 H654" class="edge-dash"/>
+  <text x="826" y="526" class="small">put()</text><text x="1270" y="526" class="small">put()</text><text x="920" y="526" class="small">put() if N &gt; 0</text>
+  <text x="822" y="331" class="small">TP barrier</text>
+  <rect x="760" y="535" width="510" height="45" class="box" fill="#fff3d9"/>
+  <text x="1015" y="554" class="label">ack_queue: only readiness strings</text><text x="1015" y="572" class="small">parent performs get() exactly N + 2 times</text>
+  <path d="M760 557 H342" class="edge-orange"/>
+  <rect x="38" y="644" width="1524" height="45" rx="12" fill="#eef3f7" stroke="#c7d5e1"/>
+  <text x="800" y="672" class="small">Default --tp-size 2 --num-tokenizer 0: rank 0 ack + detokenizer ack = 2. With --num-tokenizer 2: rank 0 + detokenizer + two tokenizer acks = 4.</text>
+</svg>

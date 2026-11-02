@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 840" role="img" aria-labelledby="title desc">
+  <title id="title">Local phase separation versus prefill decode disaggregation</title>
+  <desc id="desc">The upper half shows nano-vLLM where prefill and decode run on one local ModelRunner with one KV cache. The lower half shows generic prefill decode disaggregation where prompt KV state and request metadata must cross from a prefill worker pool to a decode worker pool.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .group { fill:none; stroke:#86a1bd; stroke-width:2; stroke-dasharray:8 7; rx:18; }
+      .title { fill:#132238; font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .dash { fill:none; stroke:#4b8e79; stroke-width:2.4; stroke-dasharray:7 6; marker-end:url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="840" fill="#f8fbff"/>
+  <text x="800" y="44" class="title">Prefill/decode phases versus prefill/decode disaggregation</text>
+  <text x="800" y="73" class="small">Both designs run a prompt phase and a token-by-token phase. Only the lower design adds a worker-pool handoff.</text>
+
+  <rect x="55" y="112" width="1490" height="282" class="group"/>
+  <text x="85" y="145" class="label" text-anchor="start">nano-vLLM: local phase separation</text>
+  <text x="1515" y="145" class="small" text-anchor="end">one `LLMEngine` / `ModelRunner` runtime</text>
+
+  <rect x="115" y="210" width="270" height="105" class="box" fill="#fff3d9"/>
+  <text x="250" y="244" class="label">prefill Batch</text><text x="250" y="271" class="small">many prompt tokens</text><text x="250" y="295" class="small">sample first output token</text>
+  <rect x="510" y="185" width="390" height="155" class="box" fill="#e8f1ff"/>
+  <text x="705" y="221" class="label">same local `ModelRunner`</text><text x="705" y="249" class="small">same model weights + same GPU</text><text x="705" y="276" class="mono">Sequence.block_table = [0, 3, 4]</text><text x="705" y="305" class="small">one preallocated local KV-cache tensor</text>
+  <rect x="1025" y="210" width="270" height="105" class="box" fill="#e4f7f0"/>
+  <text x="1160" y="244" class="label">decode Batch</text><text x="1160" y="271" class="small">one prior token/request</text><text x="1160" y="295" class="small">sample next output token</text>
+  <path d="M385 262 H510" class="edge"/><path d="M900 262 H1025" class="edge"/>
+  <path d="M1160 315 V350 H705 V340" class="dash"/>
+  <text x="930" y="363" class="small">repeat with the same local pages; no K/V transfer</text>
+
+  <rect x="55" y="462" width="1490" height="305" class="group"/>
+  <text x="85" y="495" class="label" text-anchor="start">general P/D-disaggregated serving system</text>
+  <text x="1515" y="495" class="small" text-anchor="end">two independently scheduled worker pools</text>
+
+  <rect x="115" y="555" width="320" height="130" class="box" fill="#fff3d9"/>
+  <text x="275" y="590" class="label">prefill worker pool</text><text x="275" y="618" class="small">prompt forward produces K/V pages</text><text x="275" y="645" class="small">chooses a transfer-ready representation</text><text x="275" y="669" class="small">for this request</text>
+
+  <rect x="570" y="535" width="455" height="170" class="box" fill="#ece7ff"/>
+  <text x="797" y="570" class="label">P/D handoff protocol</text><text x="797" y="600" class="small">K/V pages or shared/remote page access</text><text x="797" y="626" class="small">token history, lengths, sampling state</text><text x="797" y="652" class="small">page/block map, ownership, completion signal</text><text x="797" y="680" class="small">backpressure and decode-worker placement</text>
+
+  <rect x="1160" y="555" width="320" height="130" class="box" fill="#e4f7f0"/>
+  <text x="1320" y="590" class="label">decode worker pool</text><text x="1320" y="618" class="small">accepts transferred/shared state</text><text x="1320" y="645" class="small">runs one-token decode batches</text><text x="1320" y="669" class="small">streams subsequent tokens</text>
+  <path d="M435 620 H570" class="edge"/><path d="M1025 620 H1160" class="edge"/>
+
+  <rect x="220" y="736" width="1160" height="52" rx="13" fill="#f3f7fa" stroke="#c6d3df" stroke-width="1.4"/>
+  <text x="800" y="767" class="small">The KV transfer/shared-access mechanism is central, but it must travel with enough request metadata and ownership protocol for decoding to continue safely.</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">One Mini-SGLang scheduler iteration selects one batch</title>
+  <desc id="desc">Within one scheduler iteration, Mini-SGLang first tries to form a prefill batch. A positive token budget can admit a prompt chunk even if it does not cover the whole prompt. If no prefill batch is formed, such as when the budget is zero or resources are unavailable, the scheduler tries to form a decode batch from already-active requests. It never combines both phases in the same batch. In overlap mode, the GPU may execute the previous iteration's batch while the scheduler thread prepares the next one.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .title { fill:#132238; font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.6; marker-end:url(#arrow); }
+      .wait { fill:#8d5f11; font:600 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+    </style>
+  </defs>
+  <rect width="1600" height="720" fill="#f8fbff"/>
+  <text x="800" y="46" class="title">One scheduler iteration selects one batch: prefill first, otherwise decode</text>
+  <text x="800" y="75" class="small">The phases are mutually exclusive within a batch; overlap mode overlaps work across iterations, not inside a mixed batch.</text>
+
+  <rect x="80" y="140" width="285" height="122" class="box" fill="#fff3d9"/>
+  <text x="222" y="175" class="label">`pending_list`</text><text x="222" y="202" class="small">new prompts / chunks</text><text x="222" y="228" class="mono">PrefillManager</text>
+
+  <rect x="80" y="411" width="285" height="122" class="box" fill="#e8f1ff"/>
+  <text x="222" y="446" class="label">`running_reqs`</text><text x="222" y="473" class="small">active streams</text><text x="222" y="499" class="mono">DecodeManager</text>
+
+  <rect x="490" y="117" width="365" height="168" class="box" fill="#e4f7f0"/>
+  <text x="672" y="154" class="label">try prefill first</text><text x="672" y="184" class="mono">prefill.schedule_next_batch(</text><text x="672" y="205" class="mono">prefill_budget)</text><text x="672" y="244" class="small">budget caps uncached prompt tokens</text><text x="672" y="266" class="small">positive budget may admit a chunk</text>
+  <path d="M365 201 H490" class="edge"/>
+
+  <rect x="1015" y="140" width="400" height="122" class="box" fill="#ece7ff"/>
+  <text x="1215" y="175" class="label">prefill Batch → Engine</text><text x="1215" y="202" class="small">one or more prompt extensions</text><text x="1215" y="228" class="small">decode is not in this batch</text>
+  <path d="M855 201 H1015" class="edge"/>
+  <text x="935" y="184" class="mono">truthy Batch</text>
+
+  <path d="M672 285 V472 H865" class="edge"/>
+  <text x="760" y="373" class="mono">None</text><text x="760" y="396" class="small">no prefill Batch this iteration</text><text x="760" y="417" class="small">empty, zero budget, or no capacity</text>
+
+  <rect x="865" y="411" width="310" height="122" class="box" fill="#e8f1ff"/>
+  <text x="1020" y="446" class="label">try decode</text><text x="1020" y="473" class="small">already-active requests, sorted by uid</text><text x="1020" y="499" class="mono">one token each</text>
+  <path d="M365 472 H865" class="edge"/>
+
+  <rect x="1270" y="411" width="250" height="122" class="box" fill="#dfeefa"/>
+  <text x="1395" y="446" class="label">decode Batch → Engine</text><text x="1395" y="473" class="small">continue every stream</text><text x="1395" y="499" class="small">sample next tokens</text>
+  <path d="M1175 472 H1270" class="edge"/>
+  <text x="1020" y="557" class="small">if none are active → no batch this iteration</text>
+
+  <rect x="270" y="605" width="1060" height="61" rx="13" fill="#f3f7fa" stroke="#c6d3df" stroke-width="1.5"/>
+  <text x="800" y="632" class="label">Operational consequence: sustained admissible prefills can delay the next decode batch.</text>
+  <text x="800" y="654" class="small">The code calls out decode-first and other policies as future work; it does not silently promise fairness.</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang Step 4 scheduler and engine startup for one tensor parallel rank</title>
+  <desc id="desc">Within each scheduler child process, Scheduler construction immediately constructs Engine. The engine selects the rank GPU, initializes tensor parallel communication, loads the rank-local model shard, allocates the rank-local KV cache and page table, initializes attention and sampling, then scheduler managers and I/O are created. All ranks synchronize. Rank zero sends the parent one readiness acknowledgement and then every scheduler runs its message loop.</desc>
+  <defs>
+    <marker id="navy" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <marker id="orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#bd6417"/></marker>
+    <style>
+      .title { fill:#132238; font:600 26px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .group { fill:none; stroke:#8ba0b3; stroke-width:2; stroke-dasharray:8 7; rx:18; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .note { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#navy); }
+      .edge-orange { fill:none; stroke:#bd6417; stroke-width:2.6; marker-end:url(#orange); }
+    </style>
+  </defs>
+  <rect width="1600" height="720" fill="#f8fbff"/>
+  <text x="800" y="44" class="title">Step 4: every TP rank builds its local serving runtime before it says “ready”</text>
+
+  <rect x="60" y="93" width="1480" height="500" class="group"/>
+  <text x="90" y="123" class="note" font-weight="600">inside one scheduler child: rank r, device cuda:r</text>
+  <rect x="100" y="180" width="235" height="130" class="box" fill="#e4f7f0"/>
+  <text x="218" y="214" class="label">Scheduler(args)</text><text x="218" y="240" class="small">created in _run_scheduler()</text><text x="218" y="263" class="small">immediately constructs Engine(args)</text><text x="218" y="286" class="small">no UserMsg required</text>
+  <rect x="410" y="180" width="235" height="130" class="box" fill="#e8f1ff"/>
+  <text x="528" y="214" class="label">device + TP setup</text><text x="528" y="240" class="small">select cuda:r; CUDA stream</text><text x="528" y="263" class="small">Gloo coordination group</text><text x="528" y="286" class="small">PyNCCL/NCCL collectives</text>
+  <rect x="720" y="180" width="235" height="130" class="box" fill="#e4f7f0"/>
+  <text x="838" y="214" class="label">rank-local model</text><text x="838" y="240" class="small">build metadata on meta device</text><text x="838" y="263" class="small">load this rank's weight shard</text><text x="838" y="286" class="small">place it on cuda:r</text>
+  <rect x="1030" y="180" width="235" height="130" class="box" fill="#fff3d9"/>
+  <text x="1148" y="214" class="label">persistent GPU runtime</text><text x="1148" y="240" class="small">KV-cache pool + page table</text><text x="1148" y="263" class="small">attention backend + sampler</text><text x="1148" y="286" class="small">optional CUDA graph capture</text>
+  <rect x="1340" y="180" width="160" height="130" class="box" fill="#ece7ff"/>
+  <text x="1420" y="214" class="label">Scheduler</text><text x="1420" y="240" class="small">table/cache</text><text x="1420" y="263" class="small">prefill/decode</text><text x="1420" y="286" class="small">ZMQ I/O</text>
+  <path d="M335 245 H410" class="edge"/><path d="M645 245 H720" class="edge"/><path d="M955 245 H1030" class="edge"/><path d="M1265 245 H1340" class="edge"/>
+
+  <rect x="350" y="400" width="325" height="113" class="box" fill="#e8f1ff"/>
+  <text x="513" y="433" class="label">sync_all_ranks()</text><text x="513" y="459" class="small">all TP ranks reach the same point</text><text x="513" y="482" class="small">rank 0 may now report readiness</text>
+  <rect x="815" y="400" width="325" height="113" class="box" fill="#e4f7f0"/>
+  <text x="978" y="433" class="label">run_forever()</text><text x="978" y="459" class="small">all runtimes are loaded but idle</text><text x="978" y="482" class="small">block until the first UserMsg</text>
+  <rect x="1250" y="400" width="190" height="113" class="box" fill="#fff3d9"/>
+  <text x="1345" y="433" class="label">rank 0 only</text><text x="1345" y="459" class="small">ack_queue.put</text><text x="1345" y="482" class="small">parent may start Uvicorn</text>
+  <path d="M1420 310 V357 H513 V400" class="edge"/><path d="M675 456 H815" class="edge"/><path d="M513 513 V540 H1345 V513" class="edge-orange"/>
+  <rect x="60" y="643" width="1480" height="46" rx="12" fill="#eef3f7" stroke="#c7d5e1"/>
+  <text x="800" y="671" class="small">Every rank owns a different model/KV-cache shard but follows the same logical schedule. Parts 2–4 will open the scheduler, cache, and engine internals in detail.</text>
+</svg>

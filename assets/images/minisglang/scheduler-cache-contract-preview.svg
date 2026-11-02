@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 820" role="img" aria-labelledby="title desc">
+  <title id="title">Mini-SGLang cache data contracts at scheduler admission</title>
+  <desc id="desc">A Req has a table index and a RadixCacheHandle. The table row maps logical positions to physical KV locations. CacheManager owns free page-aligned locations and delegates prefix matching, locking, insertion, and eviction to RadixPrefixCache, whose RadixTreeNode stores parallel token key and physical location value arrays.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .title { fill:#132238; font:600 28px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .mono { fill:#31465a; font:13px ui-monospace,SFMono-Regular,Menlo,monospace; text-anchor:middle; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .dash { fill:none; stroke:#4b8e79; stroke-width:2.2; stroke-dasharray:7 6; marker-end:url(#arrow); }
+      .hint { fill:#236b4f; font:600 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+    </style>
+  </defs>
+  <rect width="1600" height="820" fill="#f8fbff"/>
+  <text x="800" y="45" class="title">The cache contract at scheduler admission</text>
+  <text x="800" y="74" class="small">The scheduler uses these objects to match and reserve a prefix. The actual K/V tensors live in the Engine's GPU cache pool.</text>
+
+  <rect x="75" y="135" width="285" height="190" class="box" fill="#e8f1ff"/>
+  <text x="217" y="171" class="label">`Req`</text>
+  <text x="217" y="204" class="mono">table_idx = 7</text>
+  <text x="217" y="230" class="mono">cached_len = 4</text>
+  <text x="217" y="256" class="mono">cache_handle = h</text>
+  <text x="217" y="292" class="small">one admitted request</text>
+
+  <rect x="465" y="135" width="315" height="190" class="box" fill="#fff3d9"/>
+  <text x="622" y="171" class="label">GPU `page_table` row 7</text>
+  <text x="622" y="202" class="small">logical token position</text>
+  <text x="622" y="230" class="mono">0   1   2   3   4   5</text>
+  <text x="622" y="257" class="mono">12  13  14  15  ?   ?</text>
+  <text x="622" y="292" class="small">physical K/V locations (raw slots)</text>
+  <path d="M360 230 H465" class="edge"/>
+  <text x="412" y="214" class="hint">uses row</text>
+
+  <rect x="875" y="118" width="300" height="225" class="box" fill="#e4f7f0"/>
+  <text x="1025" y="155" class="label">`CacheManager`</text>
+  <text x="1025" y="188" class="mono">free_slots: page-aligned</text>
+  <text x="1025" y="214" class="mono">prefix_cache: BasePrefixCache</text>
+  <text x="1025" y="251" class="small">match_req · lock / unlock</text>
+  <text x="1025" y="276" class="small">allocate_paged · cache_req</text>
+  <text x="1025" y="307" class="small">coordinates the request table and cache</text>
+  <path d="M780 230 H875" class="dash"/>
+  <text x="828" y="214" class="hint">match + reserve</text>
+
+  <rect x="1260" y="135" width="265" height="190" class="box" fill="#ece7ff"/>
+  <text x="1392" y="171" class="label">`RadixPrefixCache`</text>
+  <text x="1392" y="203" class="small">match_prefix · lock_handle</text>
+  <text x="1392" y="229" class="small">insert_prefix · evict</text>
+  <text x="1392" y="266" class="mono">root_node</text>
+  <text x="1392" y="292" class="small">reusable prefix index</text>
+  <path d="M1175 230 H1260" class="edge"/>
+
+  <line x1="75" y1="410" x2="1525" y2="410" stroke="#c6d3df" stroke-width="2"/>
+  <text x="800" y="454" class="label">A matched radix node stores a compressed run of paired arrays</text>
+
+  <rect x="225" y="500" width="480" height="190" class="box" fill="#ece7ff"/>
+  <text x="465" y="538" class="label">`RadixTreeNode`</text>
+  <text x="465" y="573" class="mono">_key   = [101,  9,  42,  88]</text>
+  <text x="465" y="603" class="mono">_value = [ 12, 13,  14,  15]</text>
+  <text x="465" y="641" class="small">same length: token ID at each position ↔ physical KV location</text>
+  <text x="465" y="668" class="small">children · parent · ref_count · timestamp</text>
+
+  <rect x="895" y="520" width="360" height="150" class="box" fill="#e8f1ff"/>
+  <text x="1075" y="556" class="label">`RadixCacheHandle`</text>
+  <text x="1075" y="588" class="mono">cached_len = 4</text>
+  <text x="1075" y="614" class="mono">node = matched node</text>
+  <text x="1075" y="646" class="small">keeps the selected prefix protected</text>
+  <path d="M705 595 H895" class="edge"/>
+  <path d="M1075 520 V390 H1392 V325" class="dash"/>
+  <text x="1218" y="374" class="hint">handle belongs to this cache</text>
+
+  <rect x="155" y="742" width="1290" height="45" rx="12" fill="#f3f7fa" stroke="#c6d3df" stroke-width="1.4"/>
+  <text x="800" y="771" class="small">Part 2: “can a `PendingReq` reserve this?” Part 3: “how do `_key`, `_value`, handles, locks, pages, and eviction make that answer safe?”</text>
+</svg>

@@ -1,0 +1,14 @@
+Python 3.10.18, torch 2.7.1, CPU
+initial: cached=4, device=6, max_device=10, extend=2
+complete+append 50: cached=6, device=7, host_len=7
+complete+append 51: cached=7, device=8, host_len=8
+complete+append 52: cached=8, device=9, host_len=9
+Context: missing batch rejected; normal/exception cleanup passes; nesting rejected without corrupting outer batch
+is_greedy({}) = True
+is_greedy({'temperature': -1}) = True
+is_greedy({'temperature': 0.7}) = False
+is_greedy({'temperature': 0.7, 'top_k': 1}) = True
+is_greedy({'temperature': 0.0, 'top_p': 0.9}) = False
+is_greedy({'temperature': 0.7, 'top_k': 1, 'top_p': 0.9}) = False
+is_greedy({'temperature': 0.0, 'top_p': 1.000001}) = False
+PASS: actual Req, Context and SamplingParams CPU contracts (illustrative input, no model/sample execution)

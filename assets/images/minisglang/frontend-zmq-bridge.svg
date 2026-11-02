@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 790" role="img" aria-labelledby="title desc">
+  <title id="title">FastAPI frontend and ZeroMQ bridge in Mini-SGLang</title>
+  <desc id="desc">A client sends an HTTP prompt to FastAPI. The module-global _GLOBAL_STATE holds one FrontendManager instance. It assigns a request ID, records an event and reply list for that request, and sends a TokenizeMsg through an asynchronous ZeroMQ PUSH socket to a tokenizer worker PULL socket. The worker forwards token IDs to scheduler rank zero. Generated token IDs return through the detokenizer worker and an asynchronous ZeroMQ PULL socket. The manager appends the reply, sets the event, and wakes the correct SSE stream.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31465a"/></marker>
+    <marker id="orange-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#bd6417"/></marker>
+    <style>
+      .box { stroke:#31465a; stroke-width:2.2; rx:14; }
+      .group { fill:none; stroke:#8ba0b3; stroke-width:2; stroke-dasharray:8 7; rx:20; }
+      .title { fill:#132238; font:600 24px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .label { fill:#132238; font:600 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .small { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-anchor:middle; }
+      .note { fill:#4c6074; font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      .edge { fill:none; stroke:#31465a; stroke-width:2.5; marker-end:url(#arrow); }
+      .edge-orange { fill:none; stroke:#bd6417; stroke-width:2.6; marker-end:url(#orange-arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="790" fill="#f8fbff"/>
+  <text x="800" y="43" class="title" font-size="27">One request: FastAPI holds the client stream; Global State bridges it to workers</text>
+
+  <rect x="34" y="205" width="178" height="116" class="box" fill="#eef3f7"/>
+  <text x="123" y="244" class="label">Client</text><text x="123" y="270" class="small">human prompt</text><text x="123" y="292" class="small">waits for SSE</text>
+
+  <rect x="271" y="80" width="596" height="523" class="group"/>
+  <text x="300" y="111" class="note" font-weight="600">one parent process: Uvicorn runs the FastAPI application</text>
+  <rect x="310" y="150" width="246" height="118" class="box" fill="#e8f1ff"/>
+  <text x="433" y="185" class="label">FastAPI route</text><text x="433" y="210" class="small">validate HTTP JSON</text><text x="433" y="232" class="small">new_user() + await send_one()</text><text x="433" y="253" class="small">return StreamingResponse</text>
+  <rect x="592" y="136" width="250" height="146" class="box" fill="#e4f7f0"/>
+  <text x="717" y="166" class="label">_GLOBAL_STATE</text><text x="717" y="190" class="small">one FrontendManager instance</text><text x="717" y="212" class="small">uid_counter → uid=42</text><text x="717" y="234" class="small">ack_map[42], event_map[42]</text><text x="717" y="256" class="small">owns queues + one listener</text>
+  <rect x="310" y="382" width="230" height="132" class="box" fill="#fff3d9"/>
+  <text x="425" y="418" class="label">Async PUSH</text><text x="425" y="444" class="small">send_tokenizer</text><text x="425" y="467" class="small">serialize dataclass</text><text x="425" y="489" class="small">MessagePack bytes</text>
+  <rect x="597" y="382" width="230" height="132" class="box" fill="#fff3d9"/>
+  <text x="712" y="418" class="label">Async PULL</text><text x="712" y="444" class="small">recv_tokenizer</text><text x="712" y="467" class="small">receive + decode</text><text x="712" y="489" class="small">wake event_map[42]</text>
+  <path d="M556 209 H592" class="edge"/><text x="574" y="196" class="small">2</text>
+  <path d="M433 268 V332 H425 V382" class="edge"/>
+  <path d="M712 382 V332 H717 V282" class="edge"/><text x="733" y="329" class="small">5: set Event</text>
+
+  <rect x="955" y="80" width="611" height="523" class="group"/>
+  <text x="984" y="111" class="note" font-weight="600">child processes: worker network, not another HTTP server</text>
+  <rect x="1000" y="150" width="244" height="118" class="box" fill="#fff3d9"/>
+  <text x="1122" y="185" class="label">Worker PULL</text><text x="1122" y="210" class="small">blocking recv_listener.get()</text><text x="1122" y="232" class="small">receives TokenizeMsg</text><text x="1122" y="253" class="small">or DetokenizeMsg</text>
+  <rect x="1302" y="150" width="220" height="118" class="box" fill="#ece7ff"/>
+  <text x="1412" y="185" class="label">Tokenizer /</text><text x="1412" y="208" class="label">detokenizer</text><text x="1412" y="233" class="small">CPU text ⇄ token IDs</text><text x="1412" y="253" class="small">same worker by default</text>
+  <rect x="1000" y="382" width="244" height="132" class="box" fill="#e4f7f0"/>
+  <text x="1122" y="418" class="label">Scheduler rank 0</text><text x="1122" y="444" class="small">receives `UserMsg`</text><text x="1122" y="467" class="small">later sends `DetokenizeMsg`</text><text x="1122" y="489" class="small">engine/GPU behind it</text>
+  <rect x="1302" y="382" width="220" height="132" class="box" fill="#fff3d9"/>
+  <text x="1412" y="418" class="label">Worker PUSH</text><text x="1412" y="444" class="small">send `UserMsg` → scheduler</text><text x="1412" y="467" class="small">send `UserReply` → frontend</text><text x="1412" y="489" class="small">MessagePack bytes</text>
+  <path d="M1244 209 H1302" class="edge"/>
+  <path d="M1412 268 V382" class="edge"/>
+
+  <path d="M212 263 H310" class="edge"/><text x="261" y="248" class="small">1: HTTP JSON</text>
+  <path d="M425 514 V570 H920 V209 H1000" class="edge-orange"/><text x="667" y="594" class="small" fill="#a85716">3: ZMQ IPC `TokenizeMsg(uid=42)`</text>
+  <path d="M1302 410 H1244" class="edge-orange"/><text x="1273" y="397" class="small" fill="#a85716">ZMQ: `UserMsg`</text>
+  <path d="M1122 382 V268" class="edge-orange"/><text x="1055" y="328" class="small" fill="#a85716">ZMQ: `DetokenizeMsg`</text>
+  <path d="M1302 480 H1275 V570 H850 V514 H827" class="edge-orange"/><text x="1067" y="594" class="small" fill="#a85716">4: ZMQ IPC `UserReply(uid=42, text, finished)`</text>
+  <path d="M597 209 H556" class="edge"/><path d="M310 209 H212" class="edge"/>
+  <text x="261" y="194" class="small">6: SSE data fragments</text>
+
+  <rect x="34" y="650" width="1532" height="99" rx="14" fill="#eef3f7" stroke="#c7d5e1"/>
+  <text x="800" y="680" class="small">ZeroMQ is a messaging library. Here it uses local IPC sockets: a PUSH socket sends a MessagePack-serialized message; a PULL socket receives it and reconstructs the declared message type.</text>
+  <text x="800" y="707" class="small">It is transport between separate processes, not shared Python memory and not a durable database queue. The frontend never calls the scheduler or GPU directly.</text>
+  <text x="800" y="732" class="small">For `--num-tokenizer 0`, one worker owns both the left-facing input PULL and the two right-facing tokenizer/detokenizer operations.</text>
+</svg>

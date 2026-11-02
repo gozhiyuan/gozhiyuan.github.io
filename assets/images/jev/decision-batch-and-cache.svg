@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 490" role="img" aria-labelledby="title desc">
+  <title id="title">Decision request batching and prefix cache</title>
+  <desc id="desc">The adapter tokenizes a shared state once, then forms independent question prompts. The inference engine can batch them, reuse complete prefix cache blocks, read candidate token logits, and return probability distributions. Warmup can add work when no complete blocks match.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#43576e"/></marker>
+    <style>
+      .title{font:700 26px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#132238;text-anchor:middle}
+      .head{font:700 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#132238;text-anchor:middle}
+      .body{font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#45596e;text-anchor:middle}
+      .edge{fill:none;stroke:#43576e;stroke-width:2.2;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="490" fill="#f8fbff"/>
+  <text x="600" y="43" class="title">Two questions share a prefix, then diverge</text>
+  <rect x="35" y="185" width="207" height="92" rx="12" fill="#e8f1ff" stroke="#91b7df"/>
+  <text x="138" y="216" class="head">Input schema</text>
+  <text x="138" y="244" class="body">state + two questions</text>
+  <rect x="300" y="185" width="225" height="92" rx="12" fill="#fff5db" stroke="#d8bb72"/>
+  <text x="412" y="216" class="head">Shared token prefix</text>
+  <text x="412" y="244" class="body">same token IDs for each row</text>
+  <path d="M242 231 H300" class="edge"/>
+  <path d="M525 231 H568 V132 H614 M568 231 V326 H614" class="edge"/>
+  <rect x="614" y="83" width="234" height="98" rx="12" fill="#e4f7f0" stroke="#89c6aa"/>
+  <text x="731" y="116" class="head">Question 1 suffix</text>
+  <text x="731" y="142" class="body">A brake · B coast · C gas</text>
+  <rect x="614" y="277" width="234" height="98" rx="12" fill="#e4f7f0" stroke="#89c6aa"/>
+  <text x="731" y="310" class="head">Question 2 suffix</text>
+  <text x="731" y="336" class="body">A boost · B no boost</text>
+  <path d="M848 132 H882 V231 H913 M848 326 H882 V231" class="edge"/>
+  <rect x="913" y="185" width="248" height="92" rx="12" fill="#efeaff" stroke="#af9cd9"/>
+  <text x="1037" y="216" class="head">Engine batch + readout</text>
+  <text x="1037" y="244" class="body">candidate logits → softmax</text>
+  <rect x="245" y="411" width="710" height="51" rx="11" fill="#e8eef5"/>
+  <text x="600" y="432" class="body">Cache reuses only completed matching prefix blocks; batching ≠ one model pass.</text>
+  <text x="600" y="451" class="body">A warmup request can be slower when the shared state fills no complete cache block.</text>
+</svg>
